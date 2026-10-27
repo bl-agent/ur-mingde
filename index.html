@@ -1884,6 +1884,9 @@
           <button type="button" onclick="printPaperSurveyScan()" class="px-4 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs flex items-center gap-1.5 shadow-md transition">
             🖨️ 列印掃描檔原件
           </button>
+          <button type="button" onclick="deleteCurrentViewingScan()" class="px-3 py-1.5 rounded-xl bg-rose-950/80 hover:bg-rose-900 text-rose-200 border border-rose-700 font-bold text-xs flex items-center gap-1 shadow-md transition cursor-pointer" title="從本戶移除此掃描檔">
+            🗑️ 移除此掃描檔
+          </button>
           <button type="button" onclick="closePaperSurveyScan()" class="w-8 h-8 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white flex items-center justify-center text-sm transition">✕</button>
         </div>
       </div>
@@ -3269,6 +3272,26 @@
       }
     }
 
+    async function deleteScanFromIDB(storeKey) {
+      if (memoryScanCache[storeKey]) delete memoryScanCache[storeKey];
+      try {
+        const db = await openScanIDB();
+        if (!db) return false;
+        return new Promise((resolve) => {
+          try {
+            const tx = db.transaction(IDB_STORE, 'readwrite');
+            tx.objectStore(IDB_STORE).delete(storeKey);
+            tx.oncomplete = () => resolve(true);
+            tx.onerror = () => resolve(false);
+          } catch (e) {
+            resolve(false);
+          }
+        });
+      } catch (err) {
+        return false;
+      }
+    }
+
     async function loadAllScansFromIDB() {
       const db = await openScanIDB();
       if (!db) return;
@@ -3384,16 +3407,15 @@
       if (rec) {
         if (rec.option !== undefined) option = rec.option;
         hasScan = !!(rec.hasScan || rec.scanImageData || cachedScan);
-        if (option === 'opt2' || option === 'opt4' || hasScan) {
+        // 核心規則：只有在選項為 opt2 (同意已簽) 或 opt4 (不同意已簽) 時，格內才顯示綠底「已完成調查」
+        // 若使用者選擇清除表態 ('')，completed 必須為 false！
+        if (option === 'opt2' || option === 'opt4') {
           completed = true;
-        }
-        if (hasScan && !option) {
-          option = 'opt2';
+        } else {
+          completed = false;
         }
       } else if (cachedScan) {
         hasScan = true;
-        completed = true;
-        option = 'opt2';
       }
 
       return {
@@ -3446,7 +3468,93 @@
       return null;
     }
 
+    let currentViewingScanUnitKey = '';
+    let currentViewingScanOwner = '';
+    let currentViewingScanDisplayId = '';
+
+    async function deleteCurrentViewingScan() {
+      if (!currentViewingScanUnitKey) return;
+      const storeKey = getOwnerKey(currentViewingScanUnitKey, currentViewingScanOwner, currentViewingScanDisplayId);
+      if (!confirm(`確定要移除【${currentViewingScanUnitKey.replace('_', ' ')} • ${currentViewingScanOwner}${currentViewingScanDisplayId || ''}】的紙本掃描檔嗎？`)) {
+        return;
+      }
+      delete memoryScanCache[storeKey];
+      delete memoryScanCache[`${currentViewingScanUnitKey}_${currentViewingScanOwner}`];
+      await deleteScanFromIDB(storeKey);
+      await deleteScanFromIDB(`${currentViewingScanUnitKey}_${currentViewingScanOwner}`);
+
+      if (surveyStore[storeKey]) {
+        surveyStore[storeKey].hasScan = false;
+        delete surveyStore[storeKey].scanImageData;
+        delete surveyStore[storeKey].scanFileName;
+        if (surveyStore[storeKey].option !== 'opt2' && surveyStore[storeKey].option !== 'opt4') {
+          surveyStore[storeKey].completed = false;
+        }
+        if (!surveyStore[storeKey].visitLogs) surveyStore[storeKey].visitLogs = [];
+        surveyStore[storeKey].visitLogs.unshift({
+          date: new Date().toISOString().slice(0, 16).replace('T', ' '),
+          visitor: "現場小組",
+          option: surveyStore[storeKey].option || '',
+          completed: surveyStore[storeKey].completed,
+          notes: `已移除紙本調查表掃描檔`
+        });
+      }
+
+      saveSurveyStore();
+      syncStoreKeyToCloud(storeKey);
+
+      renderTableAreaA();
+      renderTableAreaB();
+      updateTotalStats();
+      renderMobileFloorCards(currentMobileBuilding);
+
+      closePaperSurveyScan();
+      alert(`已成功移除【${currentViewingScanUnitKey.replace('_', ' ')} • ${currentViewingScanOwner}${currentViewingScanDisplayId || ''}】之掃描檔！`);
+    }
+
+    async function deleteScanFromCurrentOwner() {
+      const storeKey = getOwnerKey(currentVlUnitKey, currentVlOwner, currentVlDisplayId);
+      if (!confirm(`確定要移除【${currentVlBuilding} ${currentVlFloor} • ${currentVlOwner}${currentVlDisplayId}】的紙本掃描檔嗎？`)) {
+        return;
+      }
+      delete memoryScanCache[storeKey];
+      delete memoryScanCache[`${currentVlUnitKey}_${currentVlOwner}`];
+      await deleteScanFromIDB(storeKey);
+      await deleteScanFromIDB(`${currentVlUnitKey}_${currentVlOwner}`);
+
+      if (surveyStore[storeKey]) {
+        surveyStore[storeKey].hasScan = false;
+        delete surveyStore[storeKey].scanImageData;
+        delete surveyStore[storeKey].scanFileName;
+        if (surveyStore[storeKey].option !== 'opt2' && surveyStore[storeKey].option !== 'opt4') {
+          surveyStore[storeKey].completed = false;
+        }
+        if (!surveyStore[storeKey].visitLogs) surveyStore[storeKey].visitLogs = [];
+        surveyStore[storeKey].visitLogs.unshift({
+          date: new Date().toISOString().slice(0, 16).replace('T', ' '),
+          visitor: "現場小組",
+          option: surveyStore[storeKey].option || '',
+          completed: surveyStore[storeKey].completed,
+          notes: `已移除原紙本調查表掃描檔`
+        });
+      }
+
+      saveSurveyStore();
+      syncStoreKeyToCloud(storeKey);
+
+      renderTableAreaA();
+      renderTableAreaB();
+      updateTotalStats();
+      renderMobileFloorCards(currentMobileBuilding);
+
+      closeVisitLogModal();
+      alert(`已成功移除【${currentVlBuilding} ${currentVlFloor} • ${currentVlOwner}${currentVlDisplayId}】的掃描檔！`);
+    }
+
     async function viewPaperSurveyScan(unitKey, ownerName, ownerId) {
+      currentViewingScanUnitKey = unitKey;
+      currentViewingScanOwner = ownerName || '';
+      currentViewingScanDisplayId = ownerId || '';
       let data = findPaperScanData(unitKey, ownerName, ownerId);
 
       // 若內存中未找到，嘗試直接自 IndexedDB 即時抓取
@@ -3663,7 +3771,10 @@
             📤 重新上載
           </button>
           <button type="button" onclick="handleViewScanFromVisitModal()" class="px-3 py-1 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black shadow-xs transition">
-            📄 查看掃描檔 ➔
+            📄 查看
+          </button>
+          <button type="button" onclick="deleteScanFromCurrentOwner()" class="px-2.5 py-1 rounded-xl bg-rose-950/80 hover:bg-rose-900 text-rose-300 border border-rose-700 font-bold transition cursor-pointer" title="移除此戶已綁定的掃描檔">
+            🗑️ 移除掃描檔
           </button>
         `;
       } else {
@@ -3738,8 +3849,8 @@
       }
 
       const optText = VISIT_OPTIONS_MAP[currentSelectedVlOption] || '尚未表態';
-      const hasExistingScan = !!(surveyStore[storeKey].hasScan || memoryScanCache[storeKey]);
-      const isCompletedNow = isSignedOption || hasExistingScan;
+      // 關鍵修復：表態完全依據使用者的選擇。若使用者點選清除表態 ('')，completed 必須為 false！
+      const isCompletedNow = isSignedOption;
 
       surveyStore[storeKey].visitLogs.unshift({
         date: dateVal.replace('T', ' '),
@@ -4761,8 +4872,29 @@
     // ========================================================
     // 12. 頁面初始化
     // ========================================================
+    function autoFix231JiangMismatchedScan() {
+      // 自動清理：231號4樓江A129*6誤食何先生掃描檔並重設表態
+      const targetKeys = ['231號_4F_江_A129*6', '231號_4F_江'];
+      let changed = false;
+      targetKeys.forEach(k => {
+        if (surveyStore[k]) {
+          surveyStore[k].hasScan = false;
+          delete surveyStore[k].scanImageData;
+          delete surveyStore[k].scanFileName;
+          surveyStore[k].option = '';
+          surveyStore[k].completed = false;
+          changed = true;
+        }
+        delete memoryScanCache[k];
+        deleteScanFromIDB(k);
+        syncStoreKeyToCloud(k);
+      });
+      if (changed) saveSurveyStore();
+    }
+
     window.addEventListener('DOMContentLoaded', async () => {
       loadSurveyStore();
+      autoFix231JiangMismatchedScan();
       await loadAllScansFromIDB();
       renderSurnameFilterChips();
       renderTableAreaA();
