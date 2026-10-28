@@ -76,43 +76,14 @@
     .surname-text-dai     { color: #a78bfa !important; } /* 戴 (2戶): 薰衣草紫 */
     .surname-text-default { color: #f8fafc !important; } /* 單一戶姓氏: 純白亮字 */
 
-    /* 單元格背景色規則：
-       1. 尚未表態／未訪戶別：淺灰色背景 (#cbd5e1 / border #94a3b8，高對比文字)
+        /* 單元格背景色規則：
+       1. 尚未表態／未訪戶別：深灰色背景 (#334155 / border #475569)
        2. 同意未簽署 (opt1)：藍色背景 (#1e3a8a / border #3b82f6)
        3. 已完成填寫問卷 (opt2, opt4)：深綠色背景 (#064e3b / border #10b981)
     */
-    .cell-default   { background-color: #cbd5e1 !important; border-color: #94a3b8 !important; color: #0f172a !important; }
+    .cell-default   { background-color: #334155 !important; border-color: #475569 !important; color: #f8fafc !important; }
     .cell-completed { background-color: #064e3b !important; border-color: #10b981 !important; color: #ecfdf5 !important; }
     .cell-agree-unsigned { background-color: #1e3a8a !important; border-color: #3b82f6 !important; color: #eff6ff !important; }
-
-    /* 尚未表態（淺灰色背景）單元格內姓氏高對比清晰配色 */
-    .cell-default .surname-text-default { color: #0f172a !important; }
-    .cell-default .surname-text-lin     { color: #9a3412 !important; } /* 深琥珀棕 */
-    .cell-default .surname-text-xiao    { color: #6b21a8 !important; } /* 深紫色 */
-    .cell-default .surname-text-liu     { color: #9d174d !important; } /* 深桃紅 */
-    .cell-default .surname-text-zhang   { color: #0369a1 !important; } /* 深晴空藍 */
-    .cell-default .surname-text-jiang   { color: #0f766e !important; } /* 深青綠 */
-    .cell-default .surname-text-chen    { color: #3730a3 !important; } /* 深靛藍 */
-    .cell-default .surname-text-wu      { color: #c2410c !important; } /* 深橘紅 */
-    .cell-default .surname-text-yu      { color: #3f6212 !important; } /* 深萊姆綠 */
-    .cell-default .surname-text-li      { color: #0e7490 !important; } /* 深湖水藍 */
-    .cell-default .surname-text-zhou    { color: #334155 !important; } /* 深銀灰 */
-    .cell-default .surname-text-zhu     { color: #b45309 !important; } /* 深琥珀橘 */
-    .cell-default .surname-text-lv      { color: #86198f !important; } /* 深梅紫 */
-    .cell-default .surname-text-jian    { color: #1d4ed8 !important; } /* 深青藍 */
-    .cell-default .surname-text-he      { color: #b91c1c !important; } /* 深珊瑚紅 */
-    .cell-default .surname-text-huang   { color: #854d0e !important; } /* 深金黃 */
-    .cell-default .surname-text-wang    { color: #166534 !important; } /* 深翠綠 */
-    .cell-default .surname-text-dai     { color: #581c87 !important; } /* 深薰衣草紫 */
-
-    .cell-default button {
-      background-color: #f1f5f9 !important;
-      color: #1e293b !important;
-      border-color: #94a3b8 !important;
-    }
-    .cell-default button:hover {
-      background-color: #ffffff !important;
-    }
 
         /* 強制表格每一欄寬度完全統一，避免部分門牌較寬、部分較窄 */
     #tableAreaA, #tableAreaB {
@@ -327,7 +298,7 @@
 
         <div class="flex flex-wrap items-center justify-between gap-2 text-[11px] text-slate-400 px-1">
           <span>📌 <strong>統計與顯示原則</strong>：以全區 <strong>68 戶</strong>為分母；共有戶中只要有 1 位所有權人簽回同意，即視同該戶同意，但<strong>格內僅標示實際簽回之所有權人為綠色「已完成調查」</strong>，不顯示其他共有人表態，以精確區分簽署人。</span>
-          <span>尚未表態／未訪戶數：<strong class="text-slate-900 bg-slate-200 px-1.5 py-0.5 rounded border border-slate-300 font-black" id="statNoneUnits">68</strong> 戶 (<span id="statNonePct">100.0%</span>)（淺灰底）</span>
+          <span>尚未表態／未訪戶數：<strong class="text-slate-100 bg-slate-700 px-1.5 py-0.5 rounded border border-slate-600 font-black" id="statNoneUnits">68</strong> 戶 (<span id="statNonePct">100.0%</span>)（深灰底）</span>
         </div>
       </div>
     </div>
@@ -439,7 +410,7 @@
             <button type="button" onclick="event.stopPropagation(); openScanUploadModal('233號_4F', '陳', 'R100*6')" class="w-6 h-6 rounded-md text-[12px] bg-indigo-500/20 hover:bg-indigo-500/40 text-indigo-300 border border-indigo-500/40 inline-flex items-center justify-center transition shadow-2xs" title="上載 陳R100*6 的掃描檔">📤</button><button type="button" onclick="event.stopPropagation(); viewPaperSurveyScan('233號_4F', '陳', 'R100*6')" class="w-6 h-6 rounded-md text-[12px] bg-slate-800/90 hover:bg-slate-700 text-slate-400 border border-slate-700 inline-flex items-center justify-center transition" title="查看 陳R100*6 的掃描檔 (尚未上載)">📄</button>
           </div>
         </td><td class="p-1.5 border border-slate-300 cell-default cursor-pointer hover:shadow-md hover:ring-2 hover:ring-indigo-400 transition-all select-none align-middle" onclick="handleUnitClick('231號', '4F')" title="點擊選擇 231號 4F 拜訪結果">
-            <div class="text-[12px] px-1.5 py-1.5 mb-1.5 last:mb-0 flex flex-col items-center justify-center rounded-lg border bg-slate-200/90 border-slate-300 text-slate-900" data-surname="江">
+            <div class="text-[12px] px-1.5 py-1.5 mb-1.5 last:mb-0 flex flex-col items-center justify-center rounded-lg border bg-slate-800/90 border-slate-600 text-slate-100" data-surname="江">
               <div class="font-black leading-tight whitespace-nowrap text-center">
                 <span class="surname-text-jiang">江A129*6</span>
               </div>
@@ -447,7 +418,7 @@
                 <button type="button" onclick="event.stopPropagation(); openScanUploadModal('231號_4F', '江', 'A129*6')" class="w-6 h-6 rounded-md text-[12px] bg-indigo-500/20 hover:bg-indigo-500/40 text-indigo-300 border border-indigo-500/40 inline-flex items-center justify-center transition shadow-2xs" title="上載 江A129*6 的掃描檔">📤</button><button type="button" onclick="event.stopPropagation(); viewPaperSurveyScan('231號_4F', '江', 'A129*6')" class="w-6 h-6 rounded-md text-[12px] bg-slate-800/90 hover:bg-slate-700 text-slate-400 border border-slate-700 inline-flex items-center justify-center transition" title="查看 江A129*6 的掃描檔 (尚未上載)">📄</button>
               </div>
             </div>
-            <div class="text-[12px] px-1.5 py-1.5 mb-1.5 last:mb-0 flex flex-col items-center justify-center rounded-lg border bg-slate-200/90 border-slate-300 text-slate-900" data-surname="江">
+            <div class="text-[12px] px-1.5 py-1.5 mb-1.5 last:mb-0 flex flex-col items-center justify-center rounded-lg border bg-slate-800/90 border-slate-600 text-slate-100" data-surname="江">
               <div class="font-black leading-tight whitespace-nowrap text-center">
                 <span class="surname-text-jiang">江A129*2</span>
               </div>
@@ -490,7 +461,7 @@
             <button type="button" onclick="event.stopPropagation(); openScanUploadModal('221號_4F', '何', 'F121*3')" class="w-6 h-6 rounded-md text-[12px] bg-indigo-500/20 hover:bg-indigo-500/40 text-indigo-300 border border-indigo-500/40 inline-flex items-center justify-center transition shadow-2xs" title="上載 何F121*3 的掃描檔">📤</button><button type="button" onclick="event.stopPropagation(); viewPaperSurveyScan('221號_4F', '何', 'F121*3')" class="w-6 h-6 rounded-md text-[12px] bg-slate-800/90 hover:bg-slate-700 text-slate-400 border border-slate-700 inline-flex items-center justify-center transition" title="查看 何F121*3 的掃描檔 (尚未上載)">📄</button>
           </div>
         </td><td class="p-1.5 border border-slate-300 cell-default cursor-pointer hover:shadow-md hover:ring-2 hover:ring-indigo-400 transition-all select-none align-middle" onclick="handleUnitClick('219號', '4F')" title="點擊選擇 219號 4F 拜訪結果">
-            <div class="text-[12px] px-1.5 py-1.5 mb-1.5 last:mb-0 flex flex-col items-center justify-center rounded-lg border bg-slate-200/90 border-slate-300 text-slate-900" data-surname="余">
+            <div class="text-[12px] px-1.5 py-1.5 mb-1.5 last:mb-0 flex flex-col items-center justify-center rounded-lg border bg-slate-800/90 border-slate-600 text-slate-100" data-surname="余">
               <div class="font-black leading-tight whitespace-nowrap text-center">
                 <span class="surname-text-yu">余A128*8</span>
               </div>
@@ -498,7 +469,7 @@
                 <button type="button" onclick="event.stopPropagation(); openScanUploadModal('219號_4F', '余', 'A128*8')" class="w-6 h-6 rounded-md text-[12px] bg-indigo-500/20 hover:bg-indigo-500/40 text-indigo-300 border border-indigo-500/40 inline-flex items-center justify-center transition shadow-2xs" title="上載 余A128*8 的掃描檔">📤</button><button type="button" onclick="event.stopPropagation(); viewPaperSurveyScan('219號_4F', '余', 'A128*8')" class="w-6 h-6 rounded-md text-[12px] bg-slate-800/90 hover:bg-slate-700 text-slate-400 border border-slate-700 inline-flex items-center justify-center transition" title="查看 余A128*8 的掃描檔 (尚未上載)">📄</button>
               </div>
             </div>
-            <div class="text-[12px] px-1.5 py-1.5 mb-1.5 last:mb-0 flex flex-col items-center justify-center rounded-lg border bg-slate-200/90 border-slate-300 text-slate-900" data-surname="余">
+            <div class="text-[12px] px-1.5 py-1.5 mb-1.5 last:mb-0 flex flex-col items-center justify-center rounded-lg border bg-slate-800/90 border-slate-600 text-slate-100" data-surname="余">
               <div class="font-black leading-tight whitespace-nowrap text-center">
                 <span class="surname-text-yu">余A232*0</span>
               </div>
@@ -506,7 +477,7 @@
                 <button type="button" onclick="event.stopPropagation(); openScanUploadModal('219號_4F', '余', 'A232*0')" class="w-6 h-6 rounded-md text-[12px] bg-indigo-500/20 hover:bg-indigo-500/40 text-indigo-300 border border-indigo-500/40 inline-flex items-center justify-center transition shadow-2xs" title="上載 余A232*0 的掃描檔">📤</button><button type="button" onclick="event.stopPropagation(); viewPaperSurveyScan('219號_4F', '余', 'A232*0')" class="w-6 h-6 rounded-md text-[12px] bg-slate-800/90 hover:bg-slate-700 text-slate-400 border border-slate-700 inline-flex items-center justify-center transition" title="查看 余A232*0 的掃描檔 (尚未上載)">📄</button>
               </div>
             </div></td><td class="p-1.5 border border-slate-300 cell-default cursor-pointer hover:shadow-md hover:ring-2 hover:ring-indigo-400 transition-all select-none align-middle" onclick="handleUnitClick('217號', '4F')" title="點擊選擇 217號 4F 拜訪結果">
-            <div class="text-[12px] px-1.5 py-1.5 mb-1.5 last:mb-0 flex flex-col items-center justify-center rounded-lg border bg-slate-200/90 border-slate-300 text-slate-900" data-surname="蕭">
+            <div class="text-[12px] px-1.5 py-1.5 mb-1.5 last:mb-0 flex flex-col items-center justify-center rounded-lg border bg-slate-800/90 border-slate-600 text-slate-100" data-surname="蕭">
               <div class="font-black leading-tight whitespace-nowrap text-center">
                 <span class="surname-text-xiao">蕭A129*6</span>
               </div>
@@ -514,7 +485,7 @@
                 <button type="button" onclick="event.stopPropagation(); openScanUploadModal('217號_4F', '蕭', 'A129*6')" class="w-6 h-6 rounded-md text-[12px] bg-indigo-500/20 hover:bg-indigo-500/40 text-indigo-300 border border-indigo-500/40 inline-flex items-center justify-center transition shadow-2xs" title="上載 蕭A129*6 的掃描檔">📤</button><button type="button" onclick="event.stopPropagation(); viewPaperSurveyScan('217號_4F', '蕭', 'A129*6')" class="w-6 h-6 rounded-md text-[12px] bg-slate-800/90 hover:bg-slate-700 text-slate-400 border border-slate-700 inline-flex items-center justify-center transition" title="查看 蕭A129*6 的掃描檔 (尚未上載)">📄</button>
               </div>
             </div>
-            <div class="text-[12px] px-1.5 py-1.5 mb-1.5 last:mb-0 flex flex-col items-center justify-center rounded-lg border bg-slate-200/90 border-slate-300 text-slate-900" data-surname="蕭">
+            <div class="text-[12px] px-1.5 py-1.5 mb-1.5 last:mb-0 flex flex-col items-center justify-center rounded-lg border bg-slate-800/90 border-slate-600 text-slate-100" data-surname="蕭">
               <div class="font-black leading-tight whitespace-nowrap text-center">
                 <span class="surname-text-xiao">蕭A222*9</span>
               </div>
@@ -522,7 +493,7 @@
                 <button type="button" onclick="event.stopPropagation(); openScanUploadModal('217號_4F', '蕭', 'A222*9')" class="w-6 h-6 rounded-md text-[12px] bg-indigo-500/20 hover:bg-indigo-500/40 text-indigo-300 border border-indigo-500/40 inline-flex items-center justify-center transition shadow-2xs" title="上載 蕭A222*9 的掃描檔">📤</button><button type="button" onclick="event.stopPropagation(); viewPaperSurveyScan('217號_4F', '蕭', 'A222*9')" class="w-6 h-6 rounded-md text-[12px] bg-slate-800/90 hover:bg-slate-700 text-slate-400 border border-slate-700 inline-flex items-center justify-center transition" title="查看 蕭A222*9 的掃描檔 (尚未上載)">📄</button>
               </div>
             </div>
-            <div class="text-[12px] px-1.5 py-1.5 mb-1.5 last:mb-0 flex flex-col items-center justify-center rounded-lg border bg-slate-200/90 border-slate-300 text-slate-900" data-surname="蕭">
+            <div class="text-[12px] px-1.5 py-1.5 mb-1.5 last:mb-0 flex flex-col items-center justify-center rounded-lg border bg-slate-800/90 border-slate-600 text-slate-100" data-surname="蕭">
               <div class="font-black leading-tight whitespace-nowrap text-center">
                 <span class="surname-text-xiao">蕭A222*8</span>
               </div>
@@ -551,7 +522,7 @@
             <button type="button" onclick="event.stopPropagation(); openScanUploadModal('231號_3F', '方', 'P200*6')" class="w-6 h-6 rounded-md text-[12px] bg-indigo-500/20 hover:bg-indigo-500/40 text-indigo-300 border border-indigo-500/40 inline-flex items-center justify-center transition shadow-2xs" title="上載 方P200*6 的掃描檔">📤</button><button type="button" onclick="event.stopPropagation(); viewPaperSurveyScan('231號_3F', '方', 'P200*6')" class="w-6 h-6 rounded-md text-[12px] bg-slate-800/90 hover:bg-slate-700 text-slate-400 border border-slate-700 inline-flex items-center justify-center transition" title="查看 方P200*6 的掃描檔 (尚未上載)">📄</button>
           </div>
         </td><td class="p-1.5 border border-slate-300 cell-default cursor-pointer hover:shadow-md hover:ring-2 hover:ring-indigo-400 transition-all select-none align-middle" onclick="handleUnitClick('229號', '3F')" title="點擊選擇 229號 3F 拜訪結果">
-            <div class="text-[12px] px-1.5 py-1.5 mb-1.5 last:mb-0 flex flex-col items-center justify-center rounded-lg border bg-slate-200/90 border-slate-300 text-slate-900" data-surname="彭">
+            <div class="text-[12px] px-1.5 py-1.5 mb-1.5 last:mb-0 flex flex-col items-center justify-center rounded-lg border bg-slate-800/90 border-slate-600 text-slate-100" data-surname="彭">
               <div class="font-black leading-tight whitespace-nowrap text-center">
                 <span class="surname-text-default">彭A128*8</span>
               </div>
@@ -559,7 +530,7 @@
                 <button type="button" onclick="event.stopPropagation(); openScanUploadModal('229號_3F', '彭', 'A128*8')" class="w-6 h-6 rounded-md text-[12px] bg-indigo-500/20 hover:bg-indigo-500/40 text-indigo-300 border border-indigo-500/40 inline-flex items-center justify-center transition shadow-2xs" title="上載 彭A128*8 的掃描檔">📤</button><button type="button" onclick="event.stopPropagation(); viewPaperSurveyScan('229號_3F', '彭', 'A128*8')" class="w-6 h-6 rounded-md text-[12px] bg-slate-800/90 hover:bg-slate-700 text-slate-400 border border-slate-700 inline-flex items-center justify-center transition" title="查看 彭A128*8 的掃描檔 (尚未上載)">📄</button>
               </div>
             </div>
-            <div class="text-[12px] px-1.5 py-1.5 mb-1.5 last:mb-0 flex flex-col items-center justify-center rounded-lg border bg-slate-200/90 border-slate-300 text-slate-900" data-surname="戴">
+            <div class="text-[12px] px-1.5 py-1.5 mb-1.5 last:mb-0 flex flex-col items-center justify-center rounded-lg border bg-slate-800/90 border-slate-600 text-slate-100" data-surname="戴">
               <div class="font-black leading-tight whitespace-nowrap text-center">
                 <span class="surname-text-dai">戴F225*5</span>
               </div>
@@ -630,7 +601,7 @@
             <button type="button" onclick="event.stopPropagation(); openScanUploadModal('231號_2F', '陳', 'F222*3')" class="w-6 h-6 rounded-md text-[12px] bg-indigo-500/20 hover:bg-indigo-500/40 text-indigo-300 border border-indigo-500/40 inline-flex items-center justify-center transition shadow-2xs" title="上載 陳F222*3 的掃描檔">📤</button><button type="button" onclick="event.stopPropagation(); viewPaperSurveyScan('231號_2F', '陳', 'F222*3')" class="w-6 h-6 rounded-md text-[12px] bg-slate-800/90 hover:bg-slate-700 text-slate-400 border border-slate-700 inline-flex items-center justify-center transition" title="查看 陳F222*3 的掃描檔 (尚未上載)">📄</button>
           </div>
         </td><td class="p-1.5 border border-slate-300 cell-default cursor-pointer hover:shadow-md hover:ring-2 hover:ring-indigo-400 transition-all select-none align-middle" onclick="handleUnitClick('229號', '2F')" title="點擊選擇 229號 2F 拜訪結果">
-            <div class="text-[12px] px-1.5 py-1.5 mb-1.5 last:mb-0 flex flex-col items-center justify-center rounded-lg border bg-slate-200/90 border-slate-300 text-slate-900" data-surname="江">
+            <div class="text-[12px] px-1.5 py-1.5 mb-1.5 last:mb-0 flex flex-col items-center justify-center rounded-lg border bg-slate-800/90 border-slate-600 text-slate-100" data-surname="江">
               <div class="font-black leading-tight whitespace-nowrap text-center">
                 <span class="surname-text-jiang">江A123*3</span>
               </div>
@@ -638,7 +609,7 @@
                 <button type="button" onclick="event.stopPropagation(); openScanUploadModal('229號_2F', '江', 'A123*3')" class="w-6 h-6 rounded-md text-[12px] bg-indigo-500/20 hover:bg-indigo-500/40 text-indigo-300 border border-indigo-500/40 inline-flex items-center justify-center transition shadow-2xs" title="上載 江A123*3 的掃描檔">📤</button><button type="button" onclick="event.stopPropagation(); viewPaperSurveyScan('229號_2F', '江', 'A123*3')" class="w-6 h-6 rounded-md text-[12px] bg-slate-800/90 hover:bg-slate-700 text-slate-400 border border-slate-700 inline-flex items-center justify-center transition" title="查看 江A123*3 的掃描檔 (尚未上載)">📄</button>
               </div>
             </div>
-            <div class="text-[12px] px-1.5 py-1.5 mb-1.5 last:mb-0 flex flex-col items-center justify-center rounded-lg border bg-slate-200/90 border-slate-300 text-slate-900" data-surname="江">
+            <div class="text-[12px] px-1.5 py-1.5 mb-1.5 last:mb-0 flex flex-col items-center justify-center rounded-lg border bg-slate-800/90 border-slate-600 text-slate-100" data-surname="江">
               <div class="font-black leading-tight whitespace-nowrap text-center">
                 <span class="surname-text-jiang">江A123*4</span>
               </div>
@@ -709,7 +680,7 @@
             <button type="button" onclick="event.stopPropagation(); openScanUploadModal('231號_1F', '李', 'N202*3')" class="w-6 h-6 rounded-md text-[12px] bg-indigo-500/20 hover:bg-indigo-500/40 text-indigo-300 border border-indigo-500/40 inline-flex items-center justify-center transition shadow-2xs" title="上載 李N202*3 的掃描檔">📤</button><button type="button" onclick="event.stopPropagation(); viewPaperSurveyScan('231號_1F', '李', 'N202*3')" class="w-6 h-6 rounded-md text-[12px] bg-slate-800/90 hover:bg-slate-700 text-slate-400 border border-slate-700 inline-flex items-center justify-center transition" title="查看 李N202*3 的掃描檔 (尚未上載)">📄</button>
           </div>
         </td><td class="p-1.5 border border-slate-300 cell-default cursor-pointer hover:shadow-md hover:ring-2 hover:ring-indigo-400 transition-all select-none align-middle" onclick="handleUnitClick('229號', '1F')" title="點擊選擇 229號 1F 拜訪結果">
-            <div class="text-[12px] px-1.5 py-1.5 mb-1.5 last:mb-0 flex flex-col items-center justify-center rounded-lg border bg-slate-200/90 border-slate-300 text-slate-900" data-surname="江">
+            <div class="text-[12px] px-1.5 py-1.5 mb-1.5 last:mb-0 flex flex-col items-center justify-center rounded-lg border bg-slate-800/90 border-slate-600 text-slate-100" data-surname="江">
               <div class="font-black leading-tight whitespace-nowrap text-center">
                 <span class="surname-text-jiang">江A104*8</span>
               </div>
@@ -717,7 +688,7 @@
                 <button type="button" onclick="event.stopPropagation(); openScanUploadModal('229號_1F', '江', 'A104*8')" class="w-6 h-6 rounded-md text-[12px] bg-indigo-500/20 hover:bg-indigo-500/40 text-indigo-300 border border-indigo-500/40 inline-flex items-center justify-center transition shadow-2xs" title="上載 江A104*8 的掃描檔">📤</button><button type="button" onclick="event.stopPropagation(); viewPaperSurveyScan('229號_1F', '江', 'A104*8')" class="w-6 h-6 rounded-md text-[12px] bg-slate-800/90 hover:bg-slate-700 text-slate-400 border border-slate-700 inline-flex items-center justify-center transition" title="查看 江A104*8 的掃描檔 (尚未上載)">📄</button>
               </div>
             </div>
-            <div class="text-[12px] px-1.5 py-1.5 mb-1.5 last:mb-0 flex flex-col items-center justify-center rounded-lg border bg-slate-200/90 border-slate-300 text-slate-900" data-surname="江">
+            <div class="text-[12px] px-1.5 py-1.5 mb-1.5 last:mb-0 flex flex-col items-center justify-center rounded-lg border bg-slate-800/90 border-slate-600 text-slate-100" data-surname="江">
               <div class="font-black leading-tight whitespace-nowrap text-center">
                 <span class="surname-text-jiang">江A125*0</span>
               </div>
@@ -791,7 +762,7 @@
             <button type="button" onclick="event.stopPropagation(); openScanUploadModal('2弄14號_4F', '謝', 'A110*4')" class="w-6 h-6 rounded-md text-[12px] bg-indigo-500/20 hover:bg-indigo-500/40 text-indigo-300 border border-indigo-500/40 inline-flex items-center justify-center transition shadow-2xs" title="上載 謝A110*4 的掃描檔">📤</button><button type="button" onclick="event.stopPropagation(); viewPaperSurveyScan('2弄14號_4F', '謝', 'A110*4')" class="w-6 h-6 rounded-md text-[12px] bg-slate-800/90 hover:bg-slate-700 text-slate-400 border border-slate-700 inline-flex items-center justify-center transition" title="查看 謝A110*4 的掃描檔 (尚未上載)">📄</button>
           </div>
         </td><td class="p-1.5 border border-slate-300 cell-default cursor-pointer hover:shadow-md hover:ring-2 hover:ring-indigo-400 transition-all select-none align-middle" onclick="handleUnitClick('2弄12號', '4F')" title="點擊選擇 2弄12號 4F 拜訪結果">
-            <div class="text-[12px] px-1.5 py-1.5 mb-1.5 last:mb-0 flex flex-col items-center justify-center rounded-lg border bg-slate-200/90 border-slate-300 text-slate-900" data-surname="李">
+            <div class="text-[12px] px-1.5 py-1.5 mb-1.5 last:mb-0 flex flex-col items-center justify-center rounded-lg border bg-slate-800/90 border-slate-600 text-slate-100" data-surname="李">
               <div class="font-black leading-tight whitespace-nowrap text-center">
                 <span class="surname-text-li">李Y120*5</span>
               </div>
@@ -799,7 +770,7 @@
                 <button type="button" onclick="event.stopPropagation(); openScanUploadModal('2弄12號_4F', '李', 'Y120*5')" class="w-6 h-6 rounded-md text-[12px] bg-indigo-500/20 hover:bg-indigo-500/40 text-indigo-300 border border-indigo-500/40 inline-flex items-center justify-center transition shadow-2xs" title="上載 李Y120*5 的掃描檔">📤</button><button type="button" onclick="event.stopPropagation(); viewPaperSurveyScan('2弄12號_4F', '李', 'Y120*5')" class="w-6 h-6 rounded-md text-[12px] bg-slate-800/90 hover:bg-slate-700 text-slate-400 border border-slate-700 inline-flex items-center justify-center transition" title="查看 李Y120*5 的掃描檔 (尚未上載)">📄</button>
               </div>
             </div>
-            <div class="text-[12px] px-1.5 py-1.5 mb-1.5 last:mb-0 flex flex-col items-center justify-center rounded-lg border bg-slate-200/90 border-slate-300 text-slate-900" data-surname="李">
+            <div class="text-[12px] px-1.5 py-1.5 mb-1.5 last:mb-0 flex flex-col items-center justify-center rounded-lg border bg-slate-800/90 border-slate-600 text-slate-100" data-surname="李">
               <div class="font-black leading-tight whitespace-nowrap text-center">
                 <span class="surname-text-li">李Y120*3</span>
               </div>
@@ -891,7 +862,7 @@
             <button type="button" onclick="event.stopPropagation(); openScanUploadModal('2弄2號_3F', '王', 'Y220*5')" class="w-6 h-6 rounded-md text-[12px] bg-indigo-500/20 hover:bg-indigo-500/40 text-indigo-300 border border-indigo-500/40 inline-flex items-center justify-center transition shadow-2xs" title="上載 王Y220*5 的掃描檔">📤</button><button type="button" onclick="event.stopPropagation(); viewPaperSurveyScan('2弄2號_3F', '王', 'Y220*5')" class="w-6 h-6 rounded-md text-[12px] bg-slate-800/90 hover:bg-slate-700 text-slate-400 border border-slate-700 inline-flex items-center justify-center transition" title="查看 王Y220*5 的掃描檔 (尚未上載)">📄</button>
           </div>
         </td></tr><tr><td class="p-2 border border-slate-300 font-black text-[13px] bg-slate-100 text-slate-800">2F</td><td class="p-1.5 border border-slate-300 cell-default cursor-pointer hover:shadow-md hover:ring-2 hover:ring-indigo-400 transition-all select-none align-middle" onclick="handleUnitClick('2弄14號', '2F')" title="點擊選擇 2弄14號 2F 拜訪結果">
-            <div class="text-[12px] px-1.5 py-1.5 mb-1.5 last:mb-0 flex flex-col items-center justify-center rounded-lg border bg-slate-200/90 border-slate-300 text-slate-900" data-surname="蕭">
+            <div class="text-[12px] px-1.5 py-1.5 mb-1.5 last:mb-0 flex flex-col items-center justify-center rounded-lg border bg-slate-800/90 border-slate-600 text-slate-100" data-surname="蕭">
               <div class="font-black leading-tight whitespace-nowrap text-center">
                 <span class="surname-text-xiao">蕭Y120*4</span>
               </div>
@@ -899,7 +870,7 @@
                 <button type="button" onclick="event.stopPropagation(); openScanUploadModal('2弄14號_2F', '蕭', 'Y120*4')" class="w-6 h-6 rounded-md text-[12px] bg-indigo-500/20 hover:bg-indigo-500/40 text-indigo-300 border border-indigo-500/40 inline-flex items-center justify-center transition shadow-2xs" title="上載 蕭Y120*4 的掃描檔">📤</button><button type="button" onclick="event.stopPropagation(); viewPaperSurveyScan('2弄14號_2F', '蕭', 'Y120*4')" class="w-6 h-6 rounded-md text-[12px] bg-slate-800/90 hover:bg-slate-700 text-slate-400 border border-slate-700 inline-flex items-center justify-center transition" title="查看 蕭Y120*4 的掃描檔 (尚未上載)">📄</button>
               </div>
             </div>
-            <div class="text-[12px] px-1.5 py-1.5 mb-1.5 last:mb-0 flex flex-col items-center justify-center rounded-lg border bg-slate-200/90 border-slate-300 text-slate-900" data-surname="蕭">
+            <div class="text-[12px] px-1.5 py-1.5 mb-1.5 last:mb-0 flex flex-col items-center justify-center rounded-lg border bg-slate-800/90 border-slate-600 text-slate-100" data-surname="蕭">
               <div class="font-black leading-tight whitespace-nowrap text-center">
                 <span class="surname-text-xiao">蕭Y220*8</span>
               </div>
@@ -907,7 +878,7 @@
                 <button type="button" onclick="event.stopPropagation(); openScanUploadModal('2弄14號_2F', '蕭', 'Y220*8')" class="w-6 h-6 rounded-md text-[12px] bg-indigo-500/20 hover:bg-indigo-500/40 text-indigo-300 border border-indigo-500/40 inline-flex items-center justify-center transition shadow-2xs" title="上載 蕭Y220*8 的掃描檔">📤</button><button type="button" onclick="event.stopPropagation(); viewPaperSurveyScan('2弄14號_2F', '蕭', 'Y220*8')" class="w-6 h-6 rounded-md text-[12px] bg-slate-800/90 hover:bg-slate-700 text-slate-400 border border-slate-700 inline-flex items-center justify-center transition" title="查看 蕭Y220*8 的掃描檔 (尚未上載)">📄</button>
               </div>
             </div>
-            <div class="text-[12px] px-1.5 py-1.5 mb-1.5 last:mb-0 flex flex-col items-center justify-center rounded-lg border bg-slate-200/90 border-slate-300 text-slate-900" data-surname="蕭">
+            <div class="text-[12px] px-1.5 py-1.5 mb-1.5 last:mb-0 flex flex-col items-center justify-center rounded-lg border bg-slate-800/90 border-slate-600 text-slate-100" data-surname="蕭">
               <div class="font-black leading-tight whitespace-nowrap text-center">
                 <span class="surname-text-xiao">蕭Y220*7</span>
               </div>
@@ -915,7 +886,7 @@
                 <button type="button" onclick="event.stopPropagation(); openScanUploadModal('2弄14號_2F', '蕭', 'Y220*7')" class="w-6 h-6 rounded-md text-[12px] bg-indigo-500/20 hover:bg-indigo-500/40 text-indigo-300 border border-indigo-500/40 inline-flex items-center justify-center transition shadow-2xs" title="上載 蕭Y220*7 的掃描檔">📤</button><button type="button" onclick="event.stopPropagation(); viewPaperSurveyScan('2弄14號_2F', '蕭', 'Y220*7')" class="w-6 h-6 rounded-md text-[12px] bg-slate-800/90 hover:bg-slate-700 text-slate-400 border border-slate-700 inline-flex items-center justify-center transition" title="查看 蕭Y220*7 的掃描檔 (尚未上載)">📄</button>
               </div>
             </div>
-            <div class="text-[12px] px-1.5 py-1.5 mb-1.5 last:mb-0 flex flex-col items-center justify-center rounded-lg border bg-slate-200/90 border-slate-300 text-slate-900" data-surname="王">
+            <div class="text-[12px] px-1.5 py-1.5 mb-1.5 last:mb-0 flex flex-col items-center justify-center rounded-lg border bg-slate-800/90 border-slate-600 text-slate-100" data-surname="王">
               <div class="font-black leading-tight whitespace-nowrap text-center">
                 <span class="surname-text-wang">王Y220*3</span>
               </div>
@@ -951,7 +922,7 @@
             <button type="button" onclick="event.stopPropagation(); openScanUploadModal('2弄6號_2F', '巫', 'A129*6')" class="w-6 h-6 rounded-md text-[12px] bg-indigo-500/20 hover:bg-indigo-500/40 text-indigo-300 border border-indigo-500/40 inline-flex items-center justify-center transition shadow-2xs" title="上載 巫A129*6 的掃描檔">📤</button><button type="button" onclick="event.stopPropagation(); viewPaperSurveyScan('2弄6號_2F', '巫', 'A129*6')" class="w-6 h-6 rounded-md text-[12px] bg-slate-800/90 hover:bg-slate-700 text-slate-400 border border-slate-700 inline-flex items-center justify-center transition" title="查看 巫A129*6 的掃描檔 (尚未上載)">📄</button>
           </div>
         </td><td class="p-1.5 border border-slate-300 cell-default cursor-pointer hover:shadow-md hover:ring-2 hover:ring-indigo-400 transition-all select-none align-middle" onclick="handleUnitClick('2弄4號', '2F')" title="點擊選擇 2弄4號 2F 拜訪結果">
-            <div class="text-[12px] px-1.5 py-1.5 mb-1.5 last:mb-0 flex flex-col items-center justify-center rounded-lg border bg-slate-200/90 border-slate-300 text-slate-900" data-surname="吳">
+            <div class="text-[12px] px-1.5 py-1.5 mb-1.5 last:mb-0 flex flex-col items-center justify-center rounded-lg border bg-slate-800/90 border-slate-600 text-slate-100" data-surname="吳">
               <div class="font-black leading-tight whitespace-nowrap text-center">
                 <span class="surname-text-wu">吳K200*2</span>
               </div>
@@ -959,7 +930,7 @@
                 <button type="button" onclick="event.stopPropagation(); openScanUploadModal('2弄4號_2F', '吳', 'K200*2')" class="w-6 h-6 rounded-md text-[12px] bg-indigo-500/20 hover:bg-indigo-500/40 text-indigo-300 border border-indigo-500/40 inline-flex items-center justify-center transition shadow-2xs" title="上載 吳K200*2 的掃描檔">📤</button><button type="button" onclick="event.stopPropagation(); viewPaperSurveyScan('2弄4號_2F', '吳', 'K200*2')" class="w-6 h-6 rounded-md text-[12px] bg-slate-800/90 hover:bg-slate-700 text-slate-400 border border-slate-700 inline-flex items-center justify-center transition" title="查看 吳K200*2 的掃描檔 (尚未上載)">📄</button>
               </div>
             </div>
-            <div class="text-[12px] px-1.5 py-1.5 mb-1.5 last:mb-0 flex flex-col items-center justify-center rounded-lg border bg-slate-200/90 border-slate-300 text-slate-900" data-surname="吳">
+            <div class="text-[12px] px-1.5 py-1.5 mb-1.5 last:mb-0 flex flex-col items-center justify-center rounded-lg border bg-slate-800/90 border-slate-600 text-slate-100" data-surname="吳">
               <div class="font-black leading-tight whitespace-nowrap text-center">
                 <span class="surname-text-wu">吳Y220*0</span>
               </div>
@@ -967,7 +938,7 @@
                 <button type="button" onclick="event.stopPropagation(); openScanUploadModal('2弄4號_2F', '吳', 'Y220*0')" class="w-6 h-6 rounded-md text-[12px] bg-indigo-500/20 hover:bg-indigo-500/40 text-indigo-300 border border-indigo-500/40 inline-flex items-center justify-center transition shadow-2xs" title="上載 吳Y220*0 的掃描檔">📤</button><button type="button" onclick="event.stopPropagation(); viewPaperSurveyScan('2弄4號_2F', '吳', 'Y220*0')" class="w-6 h-6 rounded-md text-[12px] bg-slate-800/90 hover:bg-slate-700 text-slate-400 border border-slate-700 inline-flex items-center justify-center transition" title="查看 吳Y220*0 的掃描檔 (尚未上載)">📄</button>
               </div>
             </div>
-            <div class="text-[12px] px-1.5 py-1.5 mb-1.5 last:mb-0 flex flex-col items-center justify-center rounded-lg border bg-slate-200/90 border-slate-300 text-slate-900" data-surname="吳">
+            <div class="text-[12px] px-1.5 py-1.5 mb-1.5 last:mb-0 flex flex-col items-center justify-center rounded-lg border bg-slate-800/90 border-slate-600 text-slate-100" data-surname="吳">
               <div class="font-black leading-tight whitespace-nowrap text-center">
                 <span class="surname-text-wu">吳Y220*9</span>
               </div>
@@ -975,7 +946,7 @@
                 <button type="button" onclick="event.stopPropagation(); openScanUploadModal('2弄4號_2F', '吳', 'Y220*9')" class="w-6 h-6 rounded-md text-[12px] bg-indigo-500/20 hover:bg-indigo-500/40 text-indigo-300 border border-indigo-500/40 inline-flex items-center justify-center transition shadow-2xs" title="上載 吳Y220*9 的掃描檔">📤</button><button type="button" onclick="event.stopPropagation(); viewPaperSurveyScan('2弄4號_2F', '吳', 'Y220*9')" class="w-6 h-6 rounded-md text-[12px] bg-slate-800/90 hover:bg-slate-700 text-slate-400 border border-slate-700 inline-flex items-center justify-center transition" title="查看 吳Y220*9 的掃描檔 (尚未上載)">📄</button>
               </div>
             </div>
-            <div class="text-[12px] px-1.5 py-1.5 mb-1.5 last:mb-0 flex flex-col items-center justify-center rounded-lg border bg-slate-200/90 border-slate-300 text-slate-900" data-surname="吳">
+            <div class="text-[12px] px-1.5 py-1.5 mb-1.5 last:mb-0 flex flex-col items-center justify-center rounded-lg border bg-slate-800/90 border-slate-600 text-slate-100" data-surname="吳">
               <div class="font-black leading-tight whitespace-nowrap text-center">
                 <span class="surname-text-wu">吳Y120*1</span>
               </div>
@@ -1018,7 +989,7 @@
             <button type="button" onclick="event.stopPropagation(); openScanUploadModal('2弄8號_1F', '呂', 'F123*4')" class="w-6 h-6 rounded-md text-[12px] bg-indigo-500/20 hover:bg-indigo-500/40 text-indigo-300 border border-indigo-500/40 inline-flex items-center justify-center transition shadow-2xs" title="上載 呂F123*4 的掃描檔">📤</button><button type="button" onclick="event.stopPropagation(); viewPaperSurveyScan('2弄8號_1F', '呂', 'F123*4')" class="w-6 h-6 rounded-md text-[12px] bg-slate-800/90 hover:bg-slate-700 text-slate-400 border border-slate-700 inline-flex items-center justify-center transition" title="查看 呂F123*4 的掃描檔 (尚未上載)">📄</button>
           </div>
         </td><td class="p-1.5 border border-slate-300 cell-default cursor-pointer hover:shadow-md hover:ring-2 hover:ring-indigo-400 transition-all select-none align-middle" onclick="handleUnitClick('2弄6號', '1F')" title="點擊選擇 2弄6號 1F 拜訪結果">
-            <div class="text-[12px] px-1.5 py-1.5 mb-1.5 last:mb-0 flex flex-col items-center justify-center rounded-lg border bg-slate-200/90 border-slate-300 text-slate-900" data-surname="羅">
+            <div class="text-[12px] px-1.5 py-1.5 mb-1.5 last:mb-0 flex flex-col items-center justify-center rounded-lg border bg-slate-800/90 border-slate-600 text-slate-100" data-surname="羅">
               <div class="font-black leading-tight whitespace-nowrap text-center">
                 <span class="surname-text-default">羅B200*4</span>
               </div>
@@ -1026,7 +997,7 @@
                 <button type="button" onclick="event.stopPropagation(); openScanUploadModal('2弄6號_1F', '羅', 'B200*4')" class="w-6 h-6 rounded-md text-[12px] bg-indigo-500/20 hover:bg-indigo-500/40 text-indigo-300 border border-indigo-500/40 inline-flex items-center justify-center transition shadow-2xs" title="上載 羅B200*4 的掃描檔">📤</button><button type="button" onclick="event.stopPropagation(); viewPaperSurveyScan('2弄6號_1F', '羅', 'B200*4')" class="w-6 h-6 rounded-md text-[12px] bg-slate-800/90 hover:bg-slate-700 text-slate-400 border border-slate-700 inline-flex items-center justify-center transition" title="查看 羅B200*4 的掃描檔 (尚未上載)">📄</button>
               </div>
             </div>
-            <div class="text-[12px] px-1.5 py-1.5 mb-1.5 last:mb-0 flex flex-col items-center justify-center rounded-lg border bg-slate-200/90 border-slate-300 text-slate-900" data-surname="邱">
+            <div class="text-[12px] px-1.5 py-1.5 mb-1.5 last:mb-0 flex flex-col items-center justify-center rounded-lg border bg-slate-800/90 border-slate-600 text-slate-100" data-surname="邱">
               <div class="font-black leading-tight whitespace-nowrap text-center">
                 <span class="surname-text-default">邱K101*7</span>
               </div>
@@ -3969,7 +3940,7 @@
           const surnameCfg = SURNAME_CONFIG[s];
           const textCls = surnameCfg ? surnameCfg.textClass : 'surname-text-default';
           
-          let rowBg = 'bg-slate-200/90 border-slate-300 text-slate-900';
+          let rowBg = 'bg-slate-800/90 border-slate-600 text-slate-100';
           if (st.completed) {
             rowBg = 'cell-completed border-emerald-400';
           } else if (st.option === 'opt1') {
@@ -4929,7 +4900,7 @@
         const unitKey = `${bData.building}_${fl}`;
         const states = owners.map(o => getOwnerDisplayState(unitKey, o));
         const allCompleted = states.every(st => st.completed);
-        const cardBg = allCompleted ? 'cell-completed border-emerald-400' : (states.some(st => st.option === 'opt1') ? 'cell-agree-unsigned border-blue-400' : 'cell-default border-slate-400');
+        const cardBg = allCompleted ? 'cell-completed border-emerald-400' : (states.some(st => st.option === 'opt1') ? 'cell-agree-unsigned border-blue-400' : 'cell-default border-slate-600');
 
         let rowsHtml = '';
         owners.forEach((o, idx) => {
@@ -4937,7 +4908,7 @@
           const s = o.name[0];
           const surnameCfg = SURNAME_CONFIG[s];
           const textCls = surnameCfg ? surnameCfg.textClass : 'surname-text-default';
-          let rowBg = 'bg-slate-200 border-slate-300 text-slate-900';
+          let rowBg = 'bg-slate-800 border-slate-600 text-slate-100';
           if (st.completed) {
             rowBg = 'cell-completed border-emerald-400';
           } else if (st.option === 'opt1') {
