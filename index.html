@@ -79,6 +79,7 @@
     /* 單元格背景色規則：移除所有分類背景色，預設一律深色底 (#0f172a)；只有真正完成填寫問卷的才變更為深綠色 (#064e3b) */
     .cell-default   { background-color: #0f172a !important; border-color: #334155 !important; color: #f8fafc !important; }
     .cell-completed { background-color: #064e3b !important; border-color: #10b981 !important; color: #ecfdf5 !important; }
+    .cell-agree-unsigned { background-color: #1e3a8a !important; border-color: #3b82f6 !important; color: #eff6ff !important; }
 
         /* 強制表格每一欄寬度完全統一，避免部分門牌較寬、部分較窄 */
     #tableAreaA, #tableAreaB {
@@ -231,29 +232,29 @@
             <div class="text-[11px] text-emerald-400 font-bold">已簽回同意 <span id="statSignedAgreeUnits">0</span> / 68 戶（1人簽回視同該戶同意）</div>
           </div>
 
-          <div class="p-3.5 bg-teal-950/70 rounded-xl border border-teal-500/60 flex flex-col justify-between">
-            <div class="text-xs text-teal-300 font-bold">總同意/配合戶數與百分比</div>
-            <div class="text-2xl font-black text-teal-300 my-1" id="statTotalAgreeUnitRate">0.0%（0戶）</div>
-            <div class="text-[11px] text-teal-400 font-bold">含同意未簽署共 <span id="statTotalAgreeUnits">0</span> / 68 戶</div>
+          <div class="p-3.5 bg-blue-950/70 rounded-xl border border-blue-500/60 flex flex-col justify-between">
+            <div class="text-xs text-blue-300 font-bold">總同意/配合戶數與百分比</div>
+            <div class="text-2xl font-black text-blue-300 my-1" id="statTotalAgreeUnitRate">0.0%（0戶）</div>
+            <div class="text-[11px] text-blue-400 font-bold">含同意未簽署共 <span id="statTotalAgreeUnits">0</span> / 68 戶</div>
           </div>
 
           <div class="p-3.5 bg-indigo-950/70 rounded-xl border border-indigo-500/60 flex flex-col justify-between">
             <div class="text-xs text-indigo-300 font-bold">已完成調查戶數</div>
             <div class="text-2xl font-black text-indigo-300 my-1" id="statSurveyFilledDisplay"><span id="statSurveyFilledCount">0</span>戶（<span id="statSurveyFilledRate">0.0%</span>）</div>
-            <div class="text-[11px] text-indigo-400 font-bold">格內顯示綠色背景與「已完成調查」</div>
+            <div class="text-[11px] text-indigo-300 font-bold">已簽回同意＋已簽回不同意＋同意未簽署＋不同意不簽署</div>
           </div>
         </div>
 
         <!-- 四大拜訪選項統計明細表 (即時連動，以 68 戶為分母) -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 text-xs">
-          <div class="p-3 rounded-xl border border-slate-700 bg-slate-900/90 flex items-center justify-between gap-2">
+          <div class="p-3 rounded-xl border border-blue-600/70 bg-[#1e3a8a]/70 flex items-center justify-between gap-2">
             <div>
-              <div class="font-black text-teal-300">1. 屋主同意/會配合都更</div>
-              <div class="text-[11px] text-slate-400">但不願簽署意願調查表</div>
+              <div class="font-black text-blue-200">1. 屋主同意/會配合都更</div>
+              <div class="text-[11px] text-blue-300 font-bold">但不願簽署（藍底）</div>
             </div>
             <div class="text-right shrink-0">
               <div class="text-base font-black text-white"><span id="statOpt1Units">0</span> 戶</div>
-              <div class="text-[11px] text-teal-400 font-bold" id="statOpt1Pct">0.0%</div>
+              <div class="text-[11px] text-blue-300 font-bold" id="statOpt1Pct">0.0%</div>
             </div>
           </div>
 
@@ -3921,7 +3922,12 @@
       if (isMulti) {
         const states = owners.map(o => getOwnerDisplayState(unitKey, o));
         const allCompleted = states.every(st => st.completed);
-        const cellBg = allCompleted ? 'cell-completed' : 'cell-default';
+        let cellBg = 'cell-default';
+        if (allCompleted) {
+          cellBg = 'cell-completed';
+        } else if (states.some(st => st.option === 'opt1')) {
+          cellBg = 'border-blue-500/50';
+        }
 
         let inner = '';
         owners.forEach((o, idx) => {
@@ -3929,7 +3935,14 @@
           const s = o.name[0];
           const surnameCfg = SURNAME_CONFIG[s];
           const textCls = surnameCfg ? surnameCfg.textClass : 'surname-text-default';
-          const rowBg = st.completed ? 'cell-completed border-emerald-400' : 'bg-slate-900/90 border-slate-700';
+          
+          let rowBg = 'bg-slate-900/90 border-slate-700';
+          if (st.completed) {
+            rowBg = 'cell-completed border-emerald-400';
+          } else if (st.option === 'opt1') {
+            rowBg = 'cell-agree-unsigned border-blue-400';
+          }
+          
           const fullKey = getOwnerKey(unitKey, o.name, st.displayId);
           const logs = (surveyStore[fullKey] && surveyStore[fullKey].visitLogs) || [];
           const hasUnsignedOption = (st.option === 'opt1' || st.option === 'opt3');
@@ -3944,7 +3957,8 @@
                 ${actionBtns}
               </div>
               ${st.completed ? `<div class="text-[10px] font-black text-emerald-300 mt-0.5 leading-tight">已完成調查</div>` : ''}
-              ${!st.completed && (hasUnsignedOption || logs.length > 0) ? `<div class="text-[10px] font-bold text-indigo-300 bg-indigo-950/80 border border-indigo-700 rounded px-1 mt-0.5 leading-tight">📝已紀錄</div>` : ''}
+              ${st.option === 'opt1' ? `<div class="text-[10px] font-black text-blue-200 mt-0.5 leading-tight">同意(未簽)</div>` : ''}
+              ${!st.completed && st.option !== 'opt1' && (st.option === 'opt3' || logs.length > 0) ? `<div class="text-[10px] font-bold text-indigo-300 bg-indigo-950/80 border border-indigo-700 rounded px-1 mt-0.5 leading-tight">📝已紀錄</div>` : ''}
             </div>
           `;
         });
@@ -3960,7 +3974,13 @@
         const s = o.name[0];
         const surnameCfg = SURNAME_CONFIG[s];
         const textCls = surnameCfg ? surnameCfg.textClass : 'surname-text-default';
-        const cellBg = st.completed ? 'cell-completed' : 'cell-default';
+        
+        let cellBg = 'cell-default';
+        if (st.completed) {
+          cellBg = 'cell-completed';
+        } else if (st.option === 'opt1') {
+          cellBg = 'cell-agree-unsigned';
+        }
 
         const fullKey = getOwnerKey(unitKey, o.name, st.displayId);
         const logs = (surveyStore[fullKey] && surveyStore[fullKey].visitLogs) || [];
@@ -3975,7 +3995,8 @@
             ${actionBtns}
           </div>
           ${st.completed ? `<div class="text-[11px] font-black text-emerald-300 mt-0.5 leading-tight">已完成調查</div>` : ''}
-          ${!st.completed && (hasUnsignedOption || logs.length > 0) ? `<div class="text-[10px] font-bold text-indigo-300 bg-indigo-950/80 border border-indigo-700 rounded px-1 mt-0.5 inline-block leading-tight">📝 已紀錄</div>` : ''}
+          ${st.option === 'opt1' ? `<div class="text-[11px] font-black text-blue-200 mt-0.5 leading-tight">同意(未簽)</div>` : ''}
+          ${!st.completed && st.option !== 'opt1' && (st.option === 'opt3' || logs.length > 0) ? `<div class="text-[10px] font-bold text-indigo-300 bg-indigo-950/80 border border-indigo-700 rounded px-1 mt-0.5 inline-block leading-tight">📝 已紀錄</div>` : ''}
         `;
 
         return `<td class="p-2 border border-slate-300 ${cellBg} cursor-pointer hover:shadow-md hover:ring-2 hover:ring-indigo-400 transition-all select-none align-middle"
@@ -4529,7 +4550,8 @@
 
       const signedAgreeUnits = opt2Units;
       const totalAgreeUnits = opt1Units + opt2Units;
-      const totalSignedSurveyUnits = opt2Units + opt4Units;
+      // 關鍵更新：依指示「已完成調查戶數改為是“已簽回同意+已簽回不同意+同意未簽署+不同意不簽署“之總和」
+      const totalSurveyFilledUnits = opt1Units + opt2Units + opt3Units + opt4Units;
 
       const setTxt = (id, val) => {
         const el = document.getElementById(id);
@@ -4542,9 +4564,9 @@
       setTxt('statTotalAgreeUnits', totalAgreeUnits);
       setTxt('statTotalAgreeUnitRate', `${((totalAgreeUnits / totalUnits) * 100).toFixed(1)}%（${totalAgreeUnits}戶）`);
 
-      setTxt('statSurveyFilledCount', totalSignedSurveyUnits);
-      setTxt('statSurveyFilledRate', `${((totalSignedSurveyUnits / totalUnits) * 100).toFixed(1)}%`);
-      setTxt('statSurveyFilledDisplay', `${totalSignedSurveyUnits}戶（${((totalSignedSurveyUnits / totalUnits) * 100).toFixed(1)}%）`);
+      setTxt('statSurveyFilledCount', totalSurveyFilledUnits);
+      setTxt('statSurveyFilledRate', `${((totalSurveyFilledUnits / totalUnits) * 100).toFixed(1)}%`);
+      setTxt('statSurveyFilledDisplay', `${totalSurveyFilledUnits}戶（${((totalSurveyFilledUnits / totalUnits) * 100).toFixed(1)}%）`);
 
       setTxt('statOpt1Units', opt1Units);
       setTxt('statOpt1Pct', `${((opt1Units / totalUnits) * 100).toFixed(1)}%`);
@@ -4882,13 +4904,19 @@
           const s = o.name[0];
           const surnameCfg = SURNAME_CONFIG[s];
           const textCls = surnameCfg ? surnameCfg.textClass : 'surname-text-default';
-          const rowBg = st.completed ? 'cell-completed border-emerald-400' : 'bg-slate-900 border-slate-700';
+          let rowBg = 'bg-slate-900 border-slate-700';
+          if (st.completed) {
+            rowBg = 'cell-completed border-emerald-400';
+          } else if (st.option === 'opt1') {
+            rowBg = 'cell-agree-unsigned border-blue-400';
+          }
           const actionBtns = renderOwnerActionButtonsHtml(unitKey, o.name, st.displayId, st.hasScan);
           rowsHtml += `
             <div class="p-3 rounded-xl border ${rowBg} flex items-center justify-between gap-2 mb-2 last:mb-0 shadow-2xs" onclick="event.stopPropagation(); openVisitLogModal('${bData.building}', '${fl}', '${o.name}', '${st.displayId}')">
               <div class="flex flex-col items-start gap-1">
                 <span class="text-[14px] font-black leading-tight tracking-wide"><span class="${textCls}">${o.name}${st.displayId}</span></span>
                 ${st.completed ? `<span class="text-[11px] font-black text-emerald-300 bg-emerald-950/80 border border-emerald-600/70 px-2 py-0.5 rounded-full">已完成調查</span>` : ''}
+                ${st.option === 'opt1' ? `<span class="text-[11px] font-black text-blue-200 bg-blue-950/80 border border-blue-600/70 px-2 py-0.5 rounded-full">同意(未簽)</span>` : ''}
               </div>
               <div class="flex items-center gap-2 shrink-0">
                 ${actionBtns}
