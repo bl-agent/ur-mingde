@@ -3512,13 +3512,6 @@
             surveyStore[k].completed = false;
           }
           if (!surveyStore[k].visitLogs) surveyStore[k].visitLogs = [];
-          surveyStore[k].visitLogs.unshift({
-            date: new Date().toISOString().slice(0, 16).replace('T', ' '),
-            visitor: "現場小組",
-            option: surveyStore[k].option || '',
-            completed: surveyStore[k].completed,
-            notes: `已移除原紙本調查表掃描檔`
-          });
         }
       });
 
@@ -3854,7 +3847,8 @@
         visitor: visitor,
         option: currentSelectedVlOption,
         completed: isCompletedNow,
-        notes: notes || `點選結果：${optText}`
+        notes: notes || (currentSelectedVlOption ? `點選結果：${optText}` : ''),
+        isManual: true
       });
 
       surveyStore[storeKey].option = currentSelectedVlOption;
@@ -4464,14 +4458,8 @@
         surveyStore[storeKey].scanFileName = currentUploadedScanFileName;
         surveyStore[storeKey].signerName = signerNote || `${ownerName}${displayId}`;
 
+        // 僅記錄屋主簽署人資訊，不自動產生虛擬拜訪紀錄
         if (!surveyStore[storeKey].visitLogs) surveyStore[storeKey].visitLogs = [];
-        surveyStore[storeKey].visitLogs.unshift({
-          date: new Date().toISOString().slice(0, 16).replace('T', ' '),
-          visitor: "現場小組",
-          option: optionCode,
-          completed: true,
-          notes: `已上載紙本調查表掃描檔 (${currentUploadedScanFileName})，標註已完成調查。${signerNote ? '備註：' + signerNote : ''}`
-        });
 
         // 2. 儲存 LocalStorage (安全防溢位)
         saveSurveyStore();
@@ -4980,39 +4968,33 @@
 
         if (st.visitLogs && Array.isArray(st.visitLogs) && st.visitLogs.length > 0) {
           st.visitLogs.forEach((vl) => {
-            allLogs.push({
-              key: key,
-              building: st.building || '',
-              floor: st.floor || '',
-              unitKey: st.unitKey || '',
-              ownerName: st.ownerName || '',
-              displayId: st.displayId || '',
-              surnameCls: surnameCls,
-              date: vl.date || '無日期',
-              visitor: vl.visitor || '專案同仁',
-              option: vl.option || '',
-              completed: vl.completed,
-              notes: vl.notes || '',
-              hasScan: hasScan,
-              scanFileName: st.scanFileName || ''
-            });
-          });
-        } else if (st.option || hasScan) {
-          allLogs.push({
-            key: key,
-            building: st.building || '',
-            floor: st.floor || '',
-            unitKey: st.unitKey || '',
-            ownerName: st.ownerName || '',
-            displayId: st.displayId || '',
-            surnameCls: surnameCls,
-            date: '已記錄',
-            visitor: '現場小組',
-            option: st.option || '',
-            completed: st.completed,
-            notes: hasScan ? `已上載紙本掃描檔 (${st.scanFileName || '掃描檔'})` : '',
-            hasScan: hasScan,
-            scanFileName: st.scanFileName || ''
+            // 嚴格過濾：只顯示使用者手動輸入的拜訪紀錄，系統自動產生的訊息一律不顯示
+            const isSystemAuto = vl.isManual === false ||
+              (vl.notes && (
+                vl.notes.startsWith('已上載紙本調查表') ||
+                vl.notes.startsWith('已移除紙本調查表') ||
+                vl.notes.startsWith('已移除原紙本調查表') ||
+                vl.notes === '點選結果：尚未表態'
+              ));
+
+            if (!isSystemAuto && (vl.isManual || vl.notes || vl.option)) {
+              allLogs.push({
+                key: key,
+                building: st.building || '',
+                floor: st.floor || '',
+                unitKey: st.unitKey || '',
+                ownerName: st.ownerName || '',
+                displayId: st.displayId || '',
+                surnameCls: surnameCls,
+                date: vl.date || '無日期',
+                visitor: vl.visitor || '專案同仁',
+                option: vl.option || '',
+                completed: vl.completed,
+                notes: vl.notes || '',
+                hasScan: hasScan,
+                scanFileName: st.scanFileName || ''
+              });
+            }
           });
         }
       });
@@ -5080,18 +5062,28 @@
         const hasScan = !!(st.hasScan || (memoryScanCache[key] && memoryScanCache[key].dataUrl));
         if (st.visitLogs && Array.isArray(st.visitLogs) && st.visitLogs.length > 0) {
           st.visitLogs.forEach(vl => {
-            allLogs.push({
-              date: vl.date || '',
-              building: st.building || '',
-              floor: st.floor || '',
-              ownerName: `${st.ownerName || ''}${st.displayId || ''}`,
-              option: vl.option || '',
-              optionText: VISIT_OPTIONS_MAP[vl.option] || '尚未表態',
-              visitor: vl.visitor || '',
-              notes: (vl.notes || '').replace(/[\r\n]+/g, ' ； '),
-              hasScan: hasScan ? '是' : '否',
-              scanFileName: st.scanFileName || ''
-            });
+            const isSystemAuto = vl.isManual === false ||
+              (vl.notes && (
+                vl.notes.startsWith('已上載紙本調查表') ||
+                vl.notes.startsWith('已移除紙本調查表') ||
+                vl.notes.startsWith('已移除原紙本調查表') ||
+                vl.notes === '點選結果：尚未表態'
+              ));
+
+            if (!isSystemAuto && (vl.isManual || vl.notes || vl.option)) {
+              allLogs.push({
+                date: vl.date || '',
+                building: st.building || '',
+                floor: st.floor || '',
+                ownerName: `${st.ownerName || ''}${st.displayId || ''}`,
+                option: vl.option || '',
+                optionText: VISIT_OPTIONS_MAP[vl.option] || '尚未表態',
+                visitor: vl.visitor || '',
+                notes: (vl.notes || '').replace(/[\r\n]+/g, ' ； '),
+                hasScan: hasScan ? '是' : '否',
+                scanFileName: st.scanFileName || ''
+              });
+            }
           });
         }
       });
