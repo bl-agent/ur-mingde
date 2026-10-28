@@ -1018,101 +1018,49 @@
       </div>
     </div>
 
-    <!-- 第三大區：全區屋主意向與需求整合分析中心 -->
-    <div class="bg-white rounded-2xl p-5 sm:p-6 shadow-sm border border-slate-200 space-y-6" id="analyticsDashboard">
-      <div class="flex flex-wrap items-center justify-between gap-3 border-b pb-4">
+    <!-- 全區現場拜訪與意見回報清冊 (取代原先未實作的大數據區塊) -->
+    <div class="bg-white rounded-2xl p-5 sm:p-6 shadow-sm border border-slate-200 space-y-4" id="visitRecordsSection">
+      <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-700/80 pb-3">
         <div>
           <div class="flex items-center gap-2">
-            <span class="px-2.5 py-1 text-xs font-black rounded-lg bg-teal-600 text-white shadow-xs">意願與需求大數據</span>
-            <h2 class="text-base font-black text-slate-900">北投明德案 • 全區屋主意見與需求整合分析中心</h2>
+            <span class="px-2.5 py-1 text-xs font-black rounded-lg bg-indigo-600 text-white shadow-xs">現場工作回報</span>
+            <h2 class="text-base font-black text-slate-100 flex items-center gap-2">
+              <span>📜 現場拜訪與洽談紀錄清冊</span>
+              <span class="text-xs px-2.5 py-0.5 rounded-full font-bold bg-indigo-950 text-indigo-300 border border-indigo-700" id="allVisitLogsCountBadge">共 0 筆</span>
+            </h2>
           </div>
-          <p class="text-xs text-slate-500 mt-1">
-            <strong>核心法則：</strong>正式填寫須有親筆簽名；有接觸但不填表者填寫回報機制；非點選「目前不願意」者全數視為願意都更。
+          <p class="text-xs text-slate-400 mt-1">
+            即時彙整全區 68 戶（83 位所有權人）所有現場訪談時間、訪談同仁、意向表態與洽談備註
           </p>
         </div>
 
         <div class="flex items-center gap-2 flex-wrap">
-                    <!-- 雲端即時連線按鈕 (醒目設計) -->
-          <button type="button" id="cloudStatusBadge" onclick="openCloudModal()" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs cursor-pointer transition shadow-xs bg-amber-950/70 hover:bg-amber-900 border-amber-600/70 text-amber-200 font-black active:scale-95" title="點擊設定或查看 Firebase 雲端即時資料庫">
-            <span id="cloudStatusDot" class="w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse"></span>
-            <span id="cloudStatusText">🟡 離線模式 (點擊串接雲端)</span>
-          </button>
-          <button type="button" onclick="openScanUploadModal()" class="px-3.5 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-slate-950 text-xs font-black transition flex items-center gap-1.5 shadow-xs">
-            <span>📤</span> 上載問卷掃描檔 (智慧分析屋主)
-          </button>
-          <button onclick="exportSurveysCSV()" class="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold transition flex items-center gap-1.5 shadow-xs">
-            <span>📥</span> 匯出全區調查總表 (CSV)
+          <button type="button" onclick="exportVisitLogsCSV()" class="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold transition flex items-center gap-1.5 shadow-xs border border-slate-700 active:scale-95 cursor-pointer">
+            <span>📥</span> 匯出拜訪紀錄清冊 (CSV)
           </button>
         </div>
       </div>
 
-      <!-- 統計圖表三大看板 -->
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
-        
-        <!-- 1. 改建方式偏好 -->
-        <div class="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-3">
-          <div class="flex items-center justify-between">
-            <h3 class="text-xs font-black text-slate-900 flex items-center gap-1.5">
-              <span>🏗️</span> 改建方式偏好分佈
-            </h3>
-            <span class="text-[10px] text-slate-400 font-bold">單選</span>
-          </div>
-          <div class="space-y-2.5 text-xs" id="methodStatsContainer"></div>
-        </div>
-
-        <!-- 2. 改建後希望需求排行 -->
-        <div class="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-3">
-          <div class="flex items-center justify-between">
-            <h3 class="text-xs font-black text-slate-900 flex items-center gap-1.5">
-              <span>🎯</span> 改建後期望需求排行
-            </h3>
-            <span class="text-[10px] text-slate-400 font-bold">複選</span>
-          </div>
-          <div class="space-y-2 text-xs" id="expectStatsContainer"></div>
-        </div>
-
-        <!-- 3. 屋主最擔心的事 -->
-        <div class="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-3">
-          <div class="flex items-center justify-between">
-            <h3 class="text-xs font-black text-slate-900 flex items-center gap-1.5">
-              <span>⚠️</span> 屋主抗性與最大疑慮排行
-            </h3>
-            <span class="text-[10px] text-slate-400 font-bold">複選</span>
-          </div>
-          <div class="space-y-2 text-xs" id="worriesStatsContainer"></div>
-        </div>
-
+      <!-- 拜訪紀錄表格 -->
+      <div class="overflow-x-auto border border-slate-700 rounded-xl">
+        <table class="w-full text-left text-xs border-collapse min-w-[760px]" id="allVisitLogsTable">
+          <thead>
+            <tr class="bg-slate-800 text-slate-300 font-bold border-b border-slate-700">
+              <th class="p-2.5 w-36">拜訪時間</th>
+              <th class="p-2.5 w-24">門牌樓層</th>
+              <th class="p-2.5 w-28">屋主姓氏</th>
+              <th class="p-2.5 w-44">調查意向</th>
+              <th class="p-2.5 w-24">訪談同仁</th>
+              <th class="p-2.5">拜訪紀錄與洽談重點</th>
+              <th class="p-2.5 w-24 text-center">掃描檔</th>
+              <th class="p-2.5 w-20 text-center">操作</th>
+            </tr>
+          </thead>
+          <tbody id="allVisitLogsTableBody" class="divide-y divide-slate-800 bg-slate-900/60">
+            <!-- Populated by JS -->
+          </tbody>
+        </table>
       </div>
-
-      <!-- 屋主意見與留言彙整清單 -->
-      <div class="space-y-3 pt-2">
-        <div class="flex items-center justify-between">
-          <h3 class="text-xs font-black text-slate-900 flex items-center gap-1.5">
-            <span>💬</span> 已接觸屋主意見與回報紀錄清冊 (<span id="feedbackCount">0</span> 筆)
-          </h3>
-          <span class="text-[11px] text-slate-400">含正式簽署問卷與不填表回報備註</span>
-        </div>
-
-        <div class="overflow-x-auto border border-slate-200 rounded-xl">
-          <table class="w-full text-left text-xs border-collapse min-w-[700px]">
-            <thead>
-              <tr class="bg-slate-100 text-slate-300 font-bold border-b border-slate-200">
-                <th class="p-2.5 w-28">門牌單元</th>
-                <th class="p-2.5 w-28">所有權人</th>
-                <th class="p-2.5 w-24">意向判定</th>
-                <th class="p-2.5 w-24">記錄類型</th>
-                <th class="p-2.5 w-36">改建期望/方式</th>
-                <th class="p-2.5">屋主留言／備註事項</th>
-                <th class="p-2.5 w-20 text-center">操作</th>
-              </tr>
-            </thead>
-            <tbody id="feedbackTableBody" class="divide-y divide-slate-100 bg-white">
-              <!-- Populated by JS -->
-            </tbody>
-          </table>
-        </div>
-      </div>
-
     </div>
 
   </div>
@@ -3383,6 +3331,7 @@
         renderTableAreaB();
         updateTotalStats();
         renderMobileFloorCards(currentMobileBuilding);
+      renderAllVisitLogsTable();
         alert('✅ 已成功清空暫存並同步雲端！所有手機與電腦皆已重設還原。');
       }
     }
@@ -3537,6 +3486,7 @@
       renderTableAreaB();
       updateTotalStats();
       renderMobileFloorCards(currentMobileBuilding);
+      renderAllVisitLogsTable();
 
       closePaperSurveyScan();
       alert(`已成功移除【${currentViewingScanUnitKey.replace('_', ' ')} • ${currentViewingScanOwner}${currentViewingScanDisplayId || ''}】之掃描檔！`);
@@ -3592,6 +3542,7 @@
       renderTableAreaB();
       updateTotalStats();
       renderMobileFloorCards(currentMobileBuilding);
+      renderAllVisitLogsTable();
 
       closeVisitLogModal();
       alert(`已成功移除【${currentVlBuilding} ${currentVlFloor} • ${currentVlOwner}${currentVlDisplayId}】的掃描檔！`);
@@ -3915,6 +3866,7 @@
       renderTableAreaB();
       updateTotalStats();
       renderMobileFloorCards(currentMobileBuilding);
+      renderAllVisitLogsTable();
       renderVlHistoryTimeline();
 
       const tagEl = document.getElementById('vlCurrentStatusTag');
@@ -4539,6 +4491,7 @@
         renderTableAreaB();
         updateTotalStats();
         renderMobileFloorCards(currentMobileBuilding);
+      renderAllVisitLogsTable();
 
         closeScanUploadModal();
         alert(`🎉 已成功上載【${ownerData.building} ${ownerData.floor} • ${ownerName}${displayId}】掃描檔！\n\n該戶已標註為綠色「已完成調查」，點選「📄」查看按鈕即可隨時開啟原檔與列印。`);
@@ -4825,6 +4778,7 @@
           renderTableAreaB();
           updateTotalStats();
           renderMobileFloorCards(currentMobileBuilding);
+      renderAllVisitLogsTable();
         }
       }, (err) => {
         console.warn('Firestore 即時監聽中斷：', err);
@@ -4870,6 +4824,7 @@
         if (btnTower) btnTower.className = 'px-3 py-1.5 rounded-lg text-slate-400 hover:text-white transition flex items-center gap-1';
         renderMobileBuildingChips();
         renderMobileFloorCards(currentMobileBuilding);
+      renderAllVisitLogsTable();
       } else {
         if (mobileSec) mobileSec.classList.add('hidden');
         if (btnTower) btnTower.className = 'px-3 py-1.5 rounded-lg bg-indigo-600 text-white shadow-xs transition flex items-center gap-1';
@@ -5005,6 +4960,164 @@
       }
     }
 
+
+    // ========================================================
+    // 15. 全區現場拜訪與意見回報清冊 (即時更新與 CSV 匯出)
+    // ========================================================
+    function renderAllVisitLogsTable() {
+      const tbody = document.getElementById('allVisitLogsTableBody');
+      const countBadge = document.getElementById('allVisitLogsCountBadge');
+      if (!tbody) return;
+
+      const allLogs = [];
+      Object.keys(surveyStore).forEach(key => {
+        const st = surveyStore[key];
+        if (!st) return;
+        const ownerSurname = (st.ownerName || '')[0];
+        const surnameCfg = SURNAME_CONFIG[ownerSurname];
+        const surnameCls = surnameCfg ? surnameCfg.textClass : 'surname-text-default';
+        const hasScan = !!(st.hasScan || (memoryScanCache[key] && memoryScanCache[key].dataUrl));
+
+        if (st.visitLogs && Array.isArray(st.visitLogs) && st.visitLogs.length > 0) {
+          st.visitLogs.forEach((vl) => {
+            allLogs.push({
+              key: key,
+              building: st.building || '',
+              floor: st.floor || '',
+              unitKey: st.unitKey || '',
+              ownerName: st.ownerName || '',
+              displayId: st.displayId || '',
+              surnameCls: surnameCls,
+              date: vl.date || '無日期',
+              visitor: vl.visitor || '專案同仁',
+              option: vl.option || '',
+              completed: vl.completed,
+              notes: vl.notes || '',
+              hasScan: hasScan,
+              scanFileName: st.scanFileName || ''
+            });
+          });
+        } else if (st.option || hasScan) {
+          allLogs.push({
+            key: key,
+            building: st.building || '',
+            floor: st.floor || '',
+            unitKey: st.unitKey || '',
+            ownerName: st.ownerName || '',
+            displayId: st.displayId || '',
+            surnameCls: surnameCls,
+            date: '已記錄',
+            visitor: '現場小組',
+            option: st.option || '',
+            completed: st.completed,
+            notes: hasScan ? `已上載紙本掃描檔 (${st.scanFileName || '掃描檔'})` : '',
+            hasScan: hasScan,
+            scanFileName: st.scanFileName || ''
+          });
+        }
+      });
+
+      // 依拜訪日期由新到舊排序
+      allLogs.sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+
+      if (countBadge) {
+        countBadge.innerText = `共 ${allLogs.length} 筆`;
+      }
+
+      if (allLogs.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="8" class="p-8 text-center text-slate-400">
+              <span class="text-3xl block mb-2">📝</span>
+              目前全區尚無已輸入的拜訪紀錄。<br>
+              <span class="text-[11px] text-slate-500 mt-1 block">點選上方立體塔圖任一單元格或「手機逐棟快選」，即可開始記錄現場拜訪意向與訪談重點。</span>
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      let html = '';
+      allLogs.forEach(item => {
+        let optBadge = '<span class="text-slate-500">尚未表態</span>';
+        if (item.option === 'opt2') {
+          optBadge = '<span class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-emerald-950 text-emerald-300 border border-emerald-700 whitespace-nowrap">2. 同意已簽署 (綠底)</span>';
+        } else if (item.option === 'opt1') {
+          optBadge = '<span class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-teal-950 text-teal-300 border border-teal-700 whitespace-nowrap">1. 同意未簽署</span>';
+        } else if (item.option === 'opt3') {
+          optBadge = '<span class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-slate-800 text-amber-300 border border-slate-700 whitespace-nowrap">3. 不同意未簽署</span>';
+        } else if (item.option === 'opt4') {
+          optBadge = '<span class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-emerald-950 text-rose-300 border border-emerald-700 whitespace-nowrap">4. 不同意已簽署 (綠底)</span>';
+        }
+
+        const scanBtn = item.hasScan
+          ? `<button type="button" onclick="viewPaperSurveyScan('${item.unitKey}', '${item.ownerName}', '${item.displayId}')" class="px-2 py-1 rounded-lg bg-amber-500/25 hover:bg-amber-500/40 text-amber-300 border border-amber-500/40 font-bold transition flex items-center justify-center gap-1 mx-auto shadow-2xs cursor-pointer" title="查看掃描檔">📄 查看</button>`
+          : '<span class="text-slate-600">-</span>';
+
+        const editBtn = `<button type="button" onclick="openVisitLogModal('${item.building}', '${item.floor}', '${item.ownerName}', '${item.displayId}')" class="px-2 py-1 rounded-lg bg-indigo-600/80 hover:bg-indigo-600 text-white font-bold transition flex items-center justify-center gap-1 mx-auto shadow-2xs cursor-pointer" title="開啟該戶拜訪紀錄視窗進行補充">📝 編輯</button>`;
+
+        html += `
+          <tr class="hover:bg-slate-800/50 transition">
+            <td class="p-2.5 font-mono text-slate-300 whitespace-nowrap">${item.date}</td>
+            <td class="p-2.5 whitespace-nowrap"><span class="px-2 py-0.5 rounded-md font-bold bg-slate-800 text-sky-300 border border-slate-700">${item.building} ${item.floor}</span></td>
+            <td class="p-2.5 whitespace-nowrap"><span class="${item.surnameCls} font-black text-[13px]">${item.ownerName}${item.displayId}</span></td>
+            <td class="p-2.5">${optBadge}</td>
+            <td class="p-2.5 text-slate-300 font-medium whitespace-nowrap">${item.visitor}</td>
+            <td class="p-2.5 text-slate-200 whitespace-pre-wrap">${item.notes || '-'}</td>
+            <td class="p-2.5 text-center whitespace-nowrap">${scanBtn}</td>
+            <td class="p-2.5 text-center whitespace-nowrap">${editBtn}</td>
+          </tr>
+        `;
+      });
+      tbody.innerHTML = html;
+    }
+
+    function exportVisitLogsCSV() {
+      const allLogs = [];
+      Object.keys(surveyStore).forEach(key => {
+        const st = surveyStore[key];
+        if (!st) return;
+        const hasScan = !!(st.hasScan || (memoryScanCache[key] && memoryScanCache[key].dataUrl));
+        if (st.visitLogs && Array.isArray(st.visitLogs) && st.visitLogs.length > 0) {
+          st.visitLogs.forEach(vl => {
+            allLogs.push({
+              date: vl.date || '',
+              building: st.building || '',
+              floor: st.floor || '',
+              ownerName: `${st.ownerName || ''}${st.displayId || ''}`,
+              option: vl.option || '',
+              optionText: VISIT_OPTIONS_MAP[vl.option] || '尚未表態',
+              visitor: vl.visitor || '',
+              notes: (vl.notes || '').replace(/[\r\n]+/g, ' ； '),
+              hasScan: hasScan ? '是' : '否',
+              scanFileName: st.scanFileName || ''
+            });
+          });
+        }
+      });
+
+      if (allLogs.length === 0) {
+        alert('目前全區尚無任何拜訪紀錄可匯出！');
+        return;
+      }
+
+      allLogs.sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+
+      let csv = '拜訪時間,門牌,樓層,所有權人,意向代碼,調查意向結果,訪談同仁,洽談重點與備註,是否有紙本掃描檔,掃描檔檔名\r\n';
+      allLogs.forEach(r => {
+        const cleanNotes = `"${(r.notes || '').replace(/"/g, '""')}"`;
+        csv += `"${r.date}","${r.building}","${r.floor}","${r.ownerName}","${r.option}","${r.optionText}","${r.visitor}",${cleanNotes},"${r.hasScan}","${r.scanFileName}"\r\n`;
+      });
+
+      const blob = new Blob(["\uFEFF" + csv], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = `北投明德案_全體拜訪紀錄清冊_${new Date().toISOString().slice(0, 10)}.csv`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
     window.addEventListener('DOMContentLoaded', async () => {
       loadSurveyStore();
       autoFix231JiangMismatchedScan();
@@ -5017,6 +5130,7 @@
       initFirebaseCloud();
       renderMobileBuildingChips();
       renderMobileFloorCards(currentMobileBuilding);
+      renderAllVisitLogsTable();
     });
   </script>
 </body>
