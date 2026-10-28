@@ -3847,7 +3847,7 @@
         visitor: visitor,
         option: currentSelectedVlOption,
         completed: isCompletedNow,
-        notes: notes || (currentSelectedVlOption ? `點選結果：${optText}` : ''),
+        notes: notes, // 只保存手動輸入的訪談備註，不自動填充「點選結果」
         isManual: true
       });
 
@@ -3894,13 +3894,18 @@
       logs.forEach(item => {
         const optLabel = VISIT_OPTIONS_MAP[item.option] || (item.completed ? '已完成調查' : '拜訪紀錄');
         const badgeBg = item.completed ? 'cell-completed' : 'cell-default';
+        const cleanNotes = (item.notes || '')
+          .replace(/^點選結果[：:].*$/g, '')
+          .replace(/^已上載紙本調查表.*$/g, '')
+          .replace(/^已移除.*紙本調查表.*$/g, '')
+          .trim();
         html += `
           <div class="p-3 bg-slate-900 border border-slate-700 rounded-xl space-y-1 shadow-2xs">
             <div class="flex items-center justify-between text-[11px] gap-2 flex-wrap">
               <span class="font-bold text-slate-300">📅 ${item.date} ｜ 👤 ${item.visitor}</span>
               <span class="px-2 py-0.5 rounded-full font-black border ${badgeBg}">${optLabel}</span>
             </div>
-            <p class="text-[12px] text-slate-200 font-medium whitespace-pre-wrap">${item.notes}</p>
+            ${cleanNotes ? `<p class="text-[12px] text-slate-200 font-medium whitespace-pre-wrap">${cleanNotes}</p>` : ''}
           </div>
         `;
       });
@@ -4968,16 +4973,16 @@
 
         if (st.visitLogs && Array.isArray(st.visitLogs) && st.visitLogs.length > 0) {
           st.visitLogs.forEach((vl) => {
-            // 嚴格過濾：只顯示使用者手動輸入的拜訪紀錄，系統自動產生的訊息一律不顯示
-            const isSystemAuto = vl.isManual === false ||
-              (vl.notes && (
-                vl.notes.startsWith('已上載紙本調查表') ||
-                vl.notes.startsWith('已移除紙本調查表') ||
-                vl.notes.startsWith('已移除原紙本調查表') ||
-                vl.notes === '點選結果：尚未表態'
-              ));
+            // 依指示：「點選結果也不用顯示。只顯示手動輸入的拜訪內容。」
+            // 剔除任何自動生成的「點選結果：...」、「已上載...」、「已移除...」
+            const cleanNotes = (vl.notes || '')
+              .replace(/^點選結果[：:].*$/g, '')
+              .replace(/^已上載紙本調查表.*$/g, '')
+              .replace(/^已移除.*紙本調查表.*$/g, '')
+              .trim();
 
-            if (!isSystemAuto && (vl.isManual || vl.notes || vl.option)) {
+            // 只有真正手動填寫了拜訪洽談內容 (cleanNotes 非空字串) 的紀錄才納入清冊
+            if (cleanNotes) {
               allLogs.push({
                 key: key,
                 building: st.building || '',
@@ -4990,7 +4995,7 @@
                 visitor: vl.visitor || '專案同仁',
                 option: vl.option || '',
                 completed: vl.completed,
-                notes: vl.notes || '',
+                notes: cleanNotes,
                 hasScan: hasScan,
                 scanFileName: st.scanFileName || ''
               });
@@ -5062,15 +5067,13 @@
         const hasScan = !!(st.hasScan || (memoryScanCache[key] && memoryScanCache[key].dataUrl));
         if (st.visitLogs && Array.isArray(st.visitLogs) && st.visitLogs.length > 0) {
           st.visitLogs.forEach(vl => {
-            const isSystemAuto = vl.isManual === false ||
-              (vl.notes && (
-                vl.notes.startsWith('已上載紙本調查表') ||
-                vl.notes.startsWith('已移除紙本調查表') ||
-                vl.notes.startsWith('已移除原紙本調查表') ||
-                vl.notes === '點選結果：尚未表態'
-              ));
+            const cleanNotes = (vl.notes || '')
+              .replace(/^點選結果[：:].*$/g, '')
+              .replace(/^已上載紙本調查表.*$/g, '')
+              .replace(/^已移除.*紙本調查表.*$/g, '')
+              .trim();
 
-            if (!isSystemAuto && (vl.isManual || vl.notes || vl.option)) {
+            if (cleanNotes) {
               allLogs.push({
                 date: vl.date || '',
                 building: st.building || '',
@@ -5079,7 +5082,7 @@
                 option: vl.option || '',
                 optionText: VISIT_OPTIONS_MAP[vl.option] || '尚未表態',
                 visitor: vl.visitor || '',
-                notes: (vl.notes || '').replace(/[\r\n]+/g, ' ； '),
+                notes: cleanNotes.replace(/[\r\n]+/g, ' ； '),
                 hasScan: hasScan ? '是' : '否',
                 scanFileName: st.scanFileName || ''
               });
