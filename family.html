@@ -1,0 +1,992 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>北投明德案 | 地主家族譜系與人物情報網絡圖譜</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Vis.js Network Standalone -->
+  <script src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+  <style>
+    * {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang TC", "Noto Sans TC", "Microsoft JhengHei", sans-serif !important;
+    }
+    body {
+      background-color: #090d16 !important;
+      color: #e2e8f0 !important;
+      overflow: hidden;
+    }
+    #networkCanvas {
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(circle at center, #111827 0%, #090d16 100%);
+    }
+    /* 自訂滾動條 */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #0f172a;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #334155;
+      border-radius: 3px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #475569;
+    }
+  </style>
+</head>
+<body class="h-screen w-screen flex flex-col antialiased select-none">
+
+  <!-- 頂部功能導航列 -->
+  <header class="bg-slate-900/90 border-b border-slate-800 px-4 py-2.5 flex items-center justify-between shrink-0 z-20 backdrop-blur-md">
+    <div class="flex items-center gap-3">
+      <a href="index.html" class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold transition flex items-center gap-1.5 border border-slate-700 active:scale-95">
+        <span>🏢</span> 返回立體現況圖
+      </a>
+      <div class="h-5 w-px bg-slate-700 hidden sm:block"></div>
+      <div>
+        <div class="flex items-center gap-2">
+          <span class="px-2 py-0.5 text-[11px] font-black rounded-md bg-amber-500/20 text-amber-300 border border-amber-500/30">情報專項</span>
+          <h1 class="text-sm sm:text-base font-black text-white tracking-wide">北投明德案 • 地主家族譜系與人物關係圖譜</h1>
+        </div>
+        <p class="text-[11px] text-slate-400 hidden sm:block">
+          解析 68 戶所有權人隱形親屬網絡 • 釐清長輩婚姻、繼承脈絡與關鍵決策樞紐
+        </p>
+      </div>
+    </div>
+
+    <!-- 頂部操作按鈕 -->
+    <div class="flex items-center gap-2">
+      <button type="button" onclick="openAddRelationModal()" class="px-3 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-black text-xs shadow-md flex items-center gap-1 transition active:scale-95">
+        <span>➕</span> 輸入新線索/關係
+      </button>
+      <button type="button" onclick="toggleLayoutMode()" id="btnToggleLayout" class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold border border-slate-700 flex items-center gap-1 transition active:scale-95" title="切換力導向網絡 vs 階層族譜模式">
+        <span>🌲</span> 族譜樹狀模式
+      </button>
+      <button type="button" onclick="fitNetworkView()" class="px-2.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold border border-slate-700 transition" title="視野置中聚焦">
+        🔍 置中
+      </button>
+      <button type="button" onclick="exportGraphData()" class="px-2.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold border border-slate-700 transition" title="匯出 JSON 備份檔">
+        💾 備份
+      </button>
+    </div>
+  </header>
+
+  <!-- 主畫面：左側情報面板 + 中央全螢幕畫布 + 右側人物檔案抽屜 -->
+  <div class="flex-1 flex overflow-hidden relative">
+
+    <!-- 左側情報與篩選控制面板 -->
+    <aside class="w-80 bg-slate-900/95 border-r border-slate-800 flex flex-col shrink-0 z-10 transition-all duration-200" id="leftSidebar">
+      <!-- 標籤頁切換 -->
+      <div class="grid grid-cols-2 border-b border-slate-800 text-xs font-bold">
+        <button type="button" onclick="switchSidebarTab('clues')" id="tabBtnClues" class="py-2.5 text-center text-amber-300 border-b-2 border-amber-400 bg-slate-800/60 transition">
+          🕵️ 關鍵謎團與線索
+        </button>
+        <button type="button" onclick="switchSidebarTab('clans')" id="tabBtnClans" class="py-2.5 text-center text-slate-400 hover:text-slate-200 transition">
+          👥 家族群組篩選
+        </button>
+      </div>
+
+      <!-- Tab 1: 關鍵情報與待查謎團 -->
+      <div id="tabContentClues" class="flex-1 overflow-y-auto p-3 space-y-3">
+        <!-- 柳蕭家族情報卡 (依使用者線索建立) -->
+        <div class="p-3 bg-amber-950/40 border border-amber-600/60 rounded-xl space-y-2 cursor-pointer hover:border-amber-400 transition" onclick="focusClan('柳')">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-black text-amber-300 flex items-center gap-1">
+              <span>🔍</span> 柳氏兄弟與「蕭吳美玉」之謎
+            </span>
+            <span class="text-[10px] bg-amber-500/20 text-amber-300 px-1.5 py-0.5 rounded font-bold border border-amber-500/30">核心推論</span>
+          </div>
+          <p class="text-[11px] text-slate-300 leading-relaxed">
+            • <strong>柳金福</strong>（2弄12號1F、225號4F）父親為<strong>柳清和</strong>，母親為<strong>蕭吳美玉</strong>。<br>
+            • 蕭吳美玉冠夫姓「蕭」，本姓「吳」，傳聞改嫁三次，推測曾嫁蕭家，帶入蕭家土地產權！<br>
+            • 柳金福住2弄12-1F，明確表示<strong>「都更要聽225號2樓哥哥（柳大哥）」</strong>。<br>
+            • 夾在中間的 225號3F 與 2弄12號2F 正是<strong>蕭家</strong>，兩家極可能是同母異父或直系姻親！
+          </p>
+          <div class="text-[10px] text-amber-400/90 font-bold text-right">點擊在圖中聚焦該家族 ➔</div>
+        </div>
+
+        <!-- 223號與233號張小姐跨棟持分情報 -->
+        <div class="p-3 bg-sky-950/40 border border-sky-600/60 rounded-xl space-y-2 cursor-pointer hover:border-sky-400 transition" onclick="focusClan('張')">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-black text-sky-300 flex items-center gap-1">
+              <span>📍</span> 223號與233號 張小姐持分
+            </span>
+            <span class="text-[10px] bg-sky-500/20 text-sky-300 px-1.5 py-0.5 rounded font-bold border border-sky-500/30">跨棟地主</span>
+          </div>
+          <p class="text-[11px] text-slate-300 leading-relaxed">
+            • <strong>張小姐（P220*8）</strong>：同時持有 <strong>233號 2樓</strong> 及 <strong>223號 2樓</strong>（與林先生共有）。<br>
+            • 同時擁有明德路前排兩棟2樓產權，為前排商住面的關鍵協商對象。
+          </p>
+          <div class="text-[10px] text-sky-400/90 font-bold text-right">點擊在圖中聚焦該家族 ➔</div>
+        </div>
+
+        <!-- 219號4樓 余氏家族與朱小姐 -->
+        <div class="p-3 bg-indigo-950/40 border border-indigo-600/60 rounded-xl space-y-2 cursor-pointer hover:border-indigo-400 transition" onclick="focusClan('余')">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-black text-indigo-300 flex items-center gap-1">
+              <span>📜</span> 219號 4樓（4人共有戶）
+            </span>
+            <span class="text-[10px] bg-indigo-500/20 text-indigo-300 px-1.5 py-0.5 rounded font-bold border border-indigo-500/30">雲林東勢</span>
+          </div>
+          <p class="text-[11px] text-slate-300 leading-relaxed">
+            • 清冊第 53~56 筆：余先生（台北振華）、余小姐（雲林）、余先生（雲林）、朱小姐（雲林）。<br>
+            • 4 位共有人戶籍登記在雲林縣東勢鄉東榮路同一戶籍，屬家族公同共有或繼承祖產。
+          </p>
+          <div class="text-[10px] text-indigo-400/90 font-bold text-right">點擊在圖中聚焦該家族 ➔</div>
+        </div>
+
+        <!-- 自由新增備註小卡提示 -->
+        <div class="p-3 bg-slate-800/70 border border-slate-700 rounded-xl space-y-1.5 text-xs text-slate-400">
+          <div class="font-bold text-slate-300 flex items-center gap-1">
+            <span>💡</span> 如何補充新線索？
+          </div>
+          <p class="text-[11px] leading-relaxed">
+            您在拜訪或電話中打聽到任何「誰是誰的親戚」、「誰跟誰有恩怨」、「誰其實有決定權」，請隨時在對話中告訴我，或點擊右上角「輸入新線索」，系統將即時將關係畫入網絡圖！
+          </p>
+        </div>
+      </div>
+
+      <!-- Tab 2: 家族群組篩選 -->
+      <div id="tabContentClans" class="hidden flex-1 overflow-y-auto p-3 space-y-1.5 text-xs">
+        <button type="button" onclick="filterClan('ALL')" class="w-full text-left p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-white font-bold flex items-center justify-between border border-slate-700">
+          <span>🌐 顯示全區所有地主與網絡</span>
+          <span class="text-[11px] text-slate-400" id="cntAllNodes">68戶+親屬</span>
+        </button>
+        <div class="pt-2 text-[11px] text-slate-400 font-bold">依核心家族群組過濾聚焦：</div>
+        <div id="clanFilterButtons" class="space-y-1">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+
+      <!-- 底部圖例說明 -->
+      <div class="p-3 bg-slate-950/80 border-t border-slate-800 text-[11px] text-slate-400 space-y-1.5 shrink-0">
+        <div class="font-bold text-slate-300">圖例符號說明：</div>
+        <div class="grid grid-cols-2 gap-1 text-[10px]">
+          <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-blue-500 inline-block"></span> 現有地主 (男)</span>
+          <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-pink-500 inline-block"></span> 現有地主 (女)</span>
+          <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-amber-400 inline-block"></span> 家族長輩 (非登記)</span>
+          <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded bg-emerald-700 inline-block"></span> 房產門牌單元</span>
+          <span class="flex items-center gap-1">── 實線：已證實親屬</span>
+          <span class="flex items-center gap-1">- - 虛線：待證實傳聞/前夫</span>
+        </div>
+      </div>
+    </aside>
+
+    <!-- 中央全螢幕互動網絡圖畫布 -->
+    <main class="flex-1 h-full w-full relative">
+      <div id="networkCanvas"></div>
+
+      <!-- 懸浮浮動工具列 (左下角) -->
+      <div class="absolute bottom-4 left-4 bg-slate-900/90 border border-slate-700 p-2 rounded-2xl shadow-xl flex items-center gap-1.5 backdrop-blur-md z-10 text-xs">
+        <button type="button" onclick="togglePhysics()" id="btnPhysics" class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold transition flex items-center gap-1" title="開啟或鎖定物理模擬飄動">
+          <span>⚡</span> 物理動態：開啟
+        </button>
+        <button type="button" onclick="exportCanvasPNG()" class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold transition flex items-center gap-1" title="將目前的關係圖另存為圖片">
+          <span>📷</span> 存為圖片
+        </button>
+      </div>
+
+      <!-- 點擊提示浮籤 (頂部中央) -->
+      <div class="absolute top-3 left-1/2 -translate-x-1/2 bg-slate-900/80 border border-slate-700 px-3.5 py-1.5 rounded-full text-[11px] text-slate-300 shadow-md backdrop-blur-sm pointer-events-none flex items-center gap-1.5">
+        <span>💡 點選任一人員節點可查看情報筆記並自動高亮關聯人；滑鼠滾輪可自由縮放、拖曳畫布</span>
+      </div>
+    </main>
+
+    <!-- 右側人物詳細檔案與關係編輯抽屜 (點擊節點時滑出) -->
+    <aside id="rightDossier" class="w-96 bg-slate-900/95 border-l border-slate-800 flex flex-col shrink-0 z-20 transition-all duration-300 translate-x-full absolute right-0 top-0 bottom-0 shadow-2xl backdrop-blur-md">
+      <!-- 標題欄 -->
+      <div class="p-4 border-b border-slate-800 flex items-center justify-between bg-slate-950/60">
+        <div class="flex items-center gap-2">
+          <span class="text-xl" id="dossierAvatar">👤</span>
+          <div>
+            <h3 class="text-base font-black text-white" id="dossierName">人物情報檔案</h3>
+            <span class="text-[11px] text-indigo-400 font-bold" id="dossierSubTitle">地主／長輩詳細資料</span>
+          </div>
+        </div>
+        <button type="button" onclick="closeDossier()" class="w-7 h-7 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-300 flex items-center justify-center text-xs transition">
+          ✕
+        </button>
+      </div>
+
+      <!-- 內容資訊區 -->
+      <div class="flex-1 overflow-y-auto p-4 space-y-4 text-xs">
+        
+        <!-- 基本身分卡片 -->
+        <div class="p-3 bg-slate-800/80 border border-slate-700 rounded-xl space-y-2">
+          <div class="flex items-center justify-between">
+            <span class="text-slate-400 font-bold">身分證代碼：</span>
+            <span class="font-mono font-bold text-slate-200" id="dossierIdCode">--</span>
+          </div>
+          <div class="flex items-center justify-between">
+            <span class="text-slate-400 font-bold">所屬家族：</span>
+            <span class="font-bold text-amber-300" id="dossierClan">--</span>
+          </div>
+          <div class="flex items-center justify-between">
+            <span class="text-slate-400 font-bold">角色定位：</span>
+            <span class="font-bold text-emerald-300" id="dossierRole">--</span>
+          </div>
+        </div>
+
+        <!-- 持有房產門牌清冊 -->
+        <div class="space-y-1.5">
+          <div class="font-bold text-slate-300 flex items-center gap-1">
+            <span>🏠</span> 在本基地持有之門牌房產：
+          </div>
+          <div id="dossierPropertiesList" class="space-y-1">
+            <!-- Populated by JS -->
+          </div>
+        </div>
+
+        <!-- 親屬與關聯人清冊 -->
+        <div class="space-y-1.5">
+          <div class="font-bold text-slate-300 flex items-center gap-1">
+            <span>👥</span> 已知親屬與網絡關聯：
+          </div>
+          <div id="dossierRelationsList" class="space-y-1">
+            <!-- Populated by JS -->
+          </div>
+        </div>
+
+        <!-- 現場拜訪與情報備註 (可即時編輯保存) -->
+        <div class="space-y-1.5">
+          <div class="flex items-center justify-between">
+            <label class="font-bold text-slate-300 flex items-center gap-1">
+              <span>📝</span> 現場訪談線索與情報筆記：
+            </label>
+            <span class="text-[10px] text-emerald-400 font-bold" id="dossierSaveStatus"></span>
+          </div>
+          <textarea id="dossierNotesText" rows="5" class="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-700 text-slate-200 text-xs focus:ring-1 focus:ring-amber-400 focus:outline-none" placeholder="輸入此人的性格、家屬關係、長輩八卦、改嫁傳聞或談判注意事項..."></textarea>
+          <div class="flex justify-end">
+            <button type="button" onclick="saveCurrentDossierNotes()" class="px-3 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs transition active:scale-95 shadow-sm">
+              💾 儲存筆記
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </aside>
+
+  </div>
+
+  <!-- ======================================================== -->
+  <!-- MODAL: 新增/編輯線索關係對話框 -->
+  <!-- ======================================================== -->
+  <div id="addRelationModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-xs z-50 flex items-center justify-center p-4 hidden animate-in fade-in duration-150">
+    <div class="bg-slate-900 border border-slate-700 rounded-3xl shadow-2xl max-w-md w-full overflow-hidden flex flex-col">
+      <div class="p-4 border-b border-slate-800 flex items-center justify-between bg-slate-950/60">
+        <h3 class="text-sm font-black text-white flex items-center gap-1.5">
+          <span>➕</span> 登記新的人物、長輩或親屬關係
+        </h3>
+        <button type="button" onclick="closeAddRelationModal()" class="w-7 h-7 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs transition">✕</button>
+      </div>
+
+      <div class="p-5 space-y-4 text-xs overflow-y-auto max-h-[75vh]">
+        <!-- 選擇操作類型 -->
+        <div class="space-y-1">
+          <label class="font-bold text-slate-400">操作項目：</label>
+          <div class="grid grid-cols-2 gap-2">
+            <button type="button" id="btnActionTypeEdge" onclick="switchModalMode('edge')" class="py-2 rounded-xl font-bold bg-indigo-600 text-white border border-indigo-500 text-center transition">
+              🔗 建立兩人關係連線
+            </button>
+            <button type="button" id="btnActionTypeNode" onclick="switchModalMode('node')" class="py-2 rounded-xl font-bold bg-slate-800 text-slate-300 border border-slate-700 text-center transition">
+              👤 新增家族成員/長輩
+            </button>
+          </div>
+        </div>
+
+        <!-- 模式一：建立連線 -->
+        <div id="modalFormEdge" class="space-y-3">
+          <div class="space-y-1">
+            <label class="font-bold text-slate-300">主體人物 (人物 A)：</label>
+            <select id="edgeFromSelect" class="w-full p-2 rounded-xl bg-slate-950 border border-slate-700 text-slate-200 font-bold focus:outline-none"></select>
+          </div>
+
+          <div class="space-y-1">
+            <label class="font-bold text-slate-300">關係類型：</label>
+            <select id="edgeRelationType" class="w-full p-2 rounded-xl bg-slate-950 border border-slate-700 text-slate-200 font-bold focus:outline-none">
+              <option value="父子">父子（A是B的父親）</option>
+              <option value="母子">母子（A是B的母親）</option>
+              <option value="夫妻">夫妻（結髮配偶）</option>
+              <option value="兄弟手足">兄弟／手足</option>
+              <option value="前夫/再婚">前夫／前段婚姻（改嫁關聯）</option>
+              <option value="同母異父">同母異父手足</option>
+              <option value="堂表親戚">堂表親戚／家族長輩</option>
+              <option value="產權共有">共有房產／持分代表</option>
+            </select>
+          </div>
+
+          <div class="space-y-1">
+            <label class="font-bold text-slate-300">客體人物 (人物 B)：</label>
+            <select id="edgeToSelect" class="w-full p-2 rounded-xl bg-slate-950 border border-slate-700 text-slate-200 font-bold focus:outline-none"></select>
+          </div>
+
+          <div class="space-y-1">
+            <label class="font-bold text-slate-300">可信度驗證：</label>
+            <div class="flex items-center gap-4 pt-1">
+              <label class="flex items-center gap-1.5 cursor-pointer text-slate-200">
+                <input type="radio" name="edgeConfirmedRadio" value="true" checked class="accent-indigo-500">
+                <span>✔ 確定事實（謄本/本人親口證實，實線）</span>
+              </label>
+              <label class="flex items-center gap-1.5 cursor-pointer text-amber-300">
+                <input type="radio" name="edgeConfirmedRadio" value="false" class="accent-amber-500">
+                <span>❓ 待查推測（傳聞/八卦，虛線問號）</span>
+              </label>
+            </div>
+          </div>
+
+          <div class="space-y-1">
+            <label class="font-bold text-slate-300">情報線索備註：</label>
+            <input type="text" id="edgeNoteInput" class="w-full p-2 rounded-xl bg-slate-950 border border-slate-700 text-slate-200 text-xs" placeholder="例：訪談中聽鄰居提及曾結婚二次、產權為繼承而來...">
+          </div>
+        </div>
+
+        <!-- 模式二：新增人物 -->
+        <div id="modalFormNode" class="space-y-3 hidden">
+          <div class="space-y-1">
+            <label class="font-bold text-slate-300">姓名（或稱謂）：</label>
+            <input type="text" id="newNodeNameInput" class="w-full p-2 rounded-xl bg-slate-950 border border-slate-700 text-slate-200 font-bold text-xs" placeholder="例：蕭吳美玉、柳清和、蕭家某長輩...">
+          </div>
+
+          <div class="grid grid-cols-2 gap-2">
+            <div class="space-y-1">
+              <label class="font-bold text-slate-300">所屬家族（姓氏）：</label>
+              <input type="text" id="newNodeClanInput" class="w-full p-2 rounded-xl bg-slate-950 border border-slate-700 text-slate-200 text-xs" placeholder="例：柳、蕭、吳、林...">
+            </div>
+            <div class="space-y-1">
+              <label class="font-bold text-slate-300">身分角色：</label>
+              <select id="newNodeRoleSelect" class="w-full p-2 rounded-xl bg-slate-950 border border-slate-700 text-slate-200 text-xs">
+                <option value="elder">家族長輩／先人（非現有登記人）</option>
+                <option value="spouse">外戚／配偶</option>
+                <option value="decision_maker">幕後話事者／代理人</option>
+                <option value="landowner">所有權人地主</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="space-y-1">
+            <label class="font-bold text-slate-300">性別：</label>
+            <div class="flex items-center gap-4 pt-1">
+              <label class="flex items-center gap-1.5 cursor-pointer text-blue-300">
+                <input type="radio" name="newNodeGender" value="先生" checked class="accent-blue-500">
+                <span>先生 (男)</span>
+              </label>
+              <label class="flex items-center gap-1.5 cursor-pointer text-pink-300">
+                <input type="radio" name="newNodeGender" value="小姐" class="accent-pink-500">
+                <span>小姐 (女)</span>
+              </label>
+            </div>
+          </div>
+
+          <div class="space-y-1">
+            <label class="font-bold text-slate-300">情報備註：</label>
+            <textarea id="newNodeNotesInput" rows="2" class="w-full p-2 rounded-xl bg-slate-950 border border-slate-700 text-slate-200 text-xs" placeholder="例：柳金福之母，傳聞改嫁多次..."></textarea>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="p-4 border-t border-slate-800 bg-slate-950 flex justify-end gap-2">
+        <button type="button" onclick="closeAddRelationModal()" class="px-4 py-2 rounded-xl border border-slate-700 text-slate-400 hover:bg-slate-800 text-xs font-bold transition">
+          取消
+        </button>
+        <button type="button" onclick="submitModalData()" class="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-black text-xs shadow-md transition active:scale-95">
+          確定新增
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================================================== -->
+  <!-- JAVASCRIPT: 圖譜數據與互動邏輯 -->
+  <!-- ======================================================== -->
+  <script>
+    // 預設核心家族數據庫 (整合 68 戶所有權人與長輩情報)
+    const DEFAULT_NETWORK_DATA = {
+      nodes: [
+        // 1. 柳家與蕭吳美玉核心家族
+        { id: 'p_liu_jinfu', label: '柳金福\n(弟)', group: 'landowner_male', clan: '柳', role: '地主', id_code: 'Y100*****0', properties: ['215巷2弄12號 1F', '明德路225號 4F'], notes: '本身想都更，但明確表示「要聽住225號2樓大哥的意見」。持有兩棟房產。' },
+        { id: 'p_liu_bigbro', label: '柳大哥\n(兄•關鍵決策)', group: 'landowner_male', clan: '柳', role: '地主•話事代表', id_code: 'Y100*****9', properties: ['明德路225號 2F', '215巷2弄12號 3F'], notes: '柳金福的親哥哥，現住225號2樓。為柳家房產的實質談判話事人。' },
+        { id: 'p_liu_qinghe', label: '柳清和\n(父)', group: 'elder', clan: '柳', role: '家族長輩(先人)', id_code: '--', properties: [], notes: '柳金福與柳大哥之生父。' },
+        { id: 'p_xiao_wu_meiyu', label: '蕭吳美玉\n(母•冠蕭姓)', group: 'elder_female', clan: '吳', role: '家族核心長輩', id_code: '--', properties: [], notes: '柳金福與柳大哥之生母。本姓吳，冠夫姓蕭。傳聞改嫁三次，推測前段婚姻與基地大地主蕭氏家族深厚連帶，帶入本區房地產權。' },
+        { id: 'p_xiao_ex_husband', label: '蕭氏前夫？\n(待查婚姻)', group: 'suspected_person', clan: '蕭', role: '傳聞姻親', id_code: '--', properties: [], notes: '傳聞中蕭吳美玉女士的前段婚姻對象，疑似基地內蕭氏地主先人，待查戶籍謄本確認。' },
+
+        // 蕭家地主代表 (與柳家房產對映)
+        { id: 'p_xiao_y100_3', label: '蕭地主\n(225-3F / 2弄12-2F)', group: 'landowner_male', clan: '蕭', role: '跨棟核心地主', id_code: 'Y100*****3', properties: ['明德路225號 3F', '215巷2弄12號 2F', '明德路217號 1F'], notes: '房產恰好夾在柳家兄弟樓層正中間！極高機率與蕭吳美玉帶來的蕭家血緣或分家有關。' },
+        { id: 'p_xiao_217_4f_1', label: '蕭先生\n(217-4F)', group: 'landowner_male', clan: '蕭', role: '地主', id_code: 'A129*****6', properties: ['明德路217號 4F'], notes: '217號4樓三位共有地主之一。' },
+        { id: 'p_xiao_217_4f_2', label: '蕭小姐\n(217-4F)', group: 'landowner_female', clan: '蕭', role: '地主', id_code: 'A222*****9', properties: ['明德路217號 4F'], notes: '217號4樓三位共有地主之一。' },
+        { id: 'p_xiao_217_4f_3', label: '蕭小姐\n(217-4F)', group: 'landowner_female', clan: '蕭', role: '地主', id_code: 'A222*****8', properties: ['明德路217號 4F'], notes: '217號4樓三位共有地主之一。' },
+
+        // 2. 223號 與 233號 張小姐持分
+        { id: 'p_zhang_p220_8', label: '張小姐\n(跨棟2F)', group: 'landowner_female', clan: '張', role: '跨棟地主', id_code: 'P220*****8', properties: ['明德路233號 2F', '明德路223號 2F (共有)'], notes: '橫跨233號2樓與223號2樓（與林先生共有）兩處前排商住產權。' },
+        { id: 'p_lin_223_2f', label: '林先生\n(223-2F)', group: 'landowner_male', clan: '林', role: '地主', id_code: 'Y120*****9', properties: ['明德路223號 2F'], notes: '與張小姐（P220*8）共有223號2樓。' },
+
+        // 3. 219號4樓 余氏家族與朱小姐
+        { id: 'p_yu_a128_8', label: '余先生\n(219-4F)', group: 'landowner_male', clan: '余', role: '地主', id_code: 'A128*****8', properties: ['明德路219號 4F'], notes: '戶籍台北市北投振華里，219號4樓共有人之一。' },
+        { id: 'p_yu_a232_0', label: '余小姐\n(219-4F)', group: 'landowner_female', clan: '余', role: '地主', id_code: 'A232*****0', properties: ['明德路219號 4F'], notes: '戶籍雲林縣東勢鄉，家族共有。' },
+        { id: 'p_yu_a133_8', label: '余先生\n(219-4F)', group: 'landowner_male', clan: '余', role: '地主', id_code: 'A133*****8', properties: ['明德路219號 4F'], notes: '戶籍雲林縣東勢鄉，家族共有。' },
+        { id: 'p_chu_p233_3', label: '朱小姐\n(219-4F)', group: 'landowner_female', clan: '朱', role: '地主', id_code: 'P233*****3', properties: ['明德路219號 4F'], notes: '戶籍同在雲林縣東勢鄉，與余家共有一整層4樓。' },
+
+        // 4. 重要房產門牌節點 (提供房產直觀連線)
+        { id: 'prop_225_4f', label: '🏠 225號 4F', group: 'property', clan: '房產', role: '建物產權', properties: [], notes: '柳金福持有' },
+        { id: 'prop_225_2f', label: '🏠 225號 2F', group: 'property', clan: '房產', role: '建物產權', properties: [], notes: '柳大哥持有 (住此)' },
+        { id: 'prop_225_3f', label: '🏠 225號 3F', group: 'property', clan: '房產', role: '建物產權', properties: [], notes: '蕭地主持有 (夾在柳家兩兄弟中間)' },
+        { id: 'prop_2n12_1f', label: '🏠 2弄12號 1F', group: 'property', clan: '房產', role: '建物產權', properties: [], notes: '柳金福持有 (住此)' },
+        { id: 'prop_2n12_3f', label: '🏠 2弄12號 3F', group: 'property', clan: '房產', role: '建物產權', properties: [], notes: '柳大哥持有' },
+        { id: 'prop_2n12_2f', label: '🏠 2弄12號 2F', group: 'property', clan: '房產', role: '建物產權', properties: [], notes: '蕭地主持有 (夾在柳家兩兄弟中間)' },
+        { id: 'prop_223_2f', label: '🏠 223號 2F', group: 'property', clan: '房產', role: '建物產權', properties: [], notes: '林先生與張小姐共有' },
+        { id: 'prop_233_2f', label: '🏠 233號 2F', group: 'property', clan: '房產', role: '建物產權', properties: [], notes: '張小姐持有' },
+        { id: 'prop_219_4f', label: '🏠 219號 4F', group: 'property', clan: '房產', role: '建物產權', properties: [], notes: '余余余朱 4人共有' }
+      ],
+      edges: [
+        // 柳家父母手足關係
+        { from: 'p_liu_qinghe', to: 'p_xiao_wu_meiyu', label: '夫妻', relation: '夫妻', confirmed: true },
+        { from: 'p_liu_qinghe', to: 'p_liu_jinfu', label: '父子', relation: '父子', confirmed: true },
+        { from: 'p_liu_qinghe', to: 'p_liu_bigbro', label: '父子', relation: '父子', confirmed: true },
+        { from: 'p_xiao_wu_meiyu', to: 'p_liu_jinfu', label: '母子', relation: '母子', confirmed: true },
+        { from: 'p_xiao_wu_meiyu', to: 'p_liu_bigbro', label: '母子', relation: '母子', confirmed: true },
+        { from: 'p_liu_bigbro', to: 'p_liu_jinfu', label: '兄弟(兄長話事)', relation: '兄弟手足', confirmed: true },
+
+        // 蕭吳美玉之傳聞前段婚姻
+        { from: 'p_xiao_ex_husband', to: 'p_xiao_wu_meiyu', label: '前夫？(冠夫姓來源)', relation: '前夫/再婚', confirmed: false, dashes: true },
+        { from: 'p_xiao_ex_husband', to: 'p_xiao_y100_3', label: '蕭氏宗族親戚？', relation: '堂表親戚', confirmed: false, dashes: true },
+
+        // 柳家房產持有關係
+        { from: 'p_liu_jinfu', to: 'prop_225_4f', label: '持有', relation: '產權共有', confirmed: true },
+        { from: 'p_liu_jinfu', to: 'prop_2n12_1f', label: '持有(現住)', relation: '產權共有', confirmed: true },
+        { from: 'p_liu_bigbro', to: 'prop_225_2f', label: '持有(現住)', relation: '產權共有', confirmed: true },
+        { from: 'p_liu_bigbro', to: 'prop_2n12_3f', label: '持有', relation: '產權共有', confirmed: true },
+
+        // 蕭家房產 (夾層)
+        { from: 'p_xiao_y100_3', to: 'prop_225_3f', label: '持有(夾層)', relation: '產權共有', confirmed: true },
+        { from: 'p_xiao_y100_3', to: 'prop_2n12_2f', label: '持有(夾層)', relation: '產權共有', confirmed: true },
+
+        // 223 與 233 張小姐持分
+        { from: 'p_zhang_p220_8', to: 'prop_233_2f', label: '單獨持有', relation: '產權共有', confirmed: true },
+        { from: 'p_zhang_p220_8', to: 'prop_223_2f', label: '共有', relation: '產權共有', confirmed: true },
+        { from: 'p_lin_223_2f', to: 'prop_223_2f', label: '共有', relation: '產權共有', confirmed: true },
+
+        // 219號4樓共有
+        { from: 'p_yu_a128_8', to: 'prop_219_4f', label: '共有', relation: '產權共有', confirmed: true },
+        { from: 'p_yu_a232_0', to: 'prop_219_4f', label: '共有', relation: '產權共有', confirmed: true },
+        { from: 'p_yu_a133_8', to: 'prop_219_4f', label: '共有', relation: '產權共有', confirmed: true },
+        { from: 'p_chu_p233_3', to: 'prop_219_4f', label: '共有', relation: '產權共有', confirmed: true },
+        { from: 'p_yu_a128_8', to: 'p_yu_a232_0', label: '家族宗親', relation: '堂表親戚', confirmed: true },
+        { from: 'p_yu_a133_8', to: 'p_chu_p233_3', label: '同住/親屬', relation: '堂表親戚', confirmed: true }
+      ]
+    };
+
+    let network = null;
+    let networkData = null;
+    let isHierarchical = false;
+    let physicsEnabled = true;
+    let activeFilterClan = 'ALL';
+    let currentViewingNodeId = null;
+
+    // 本地持久化資料初始化
+    function loadSavedNetworkData() {
+      const saved = localStorage.getItem('mingde_family_network_data');
+      if (saved) {
+        try {
+          return JSON.parse(saved);
+        } catch(e) {
+          console.error('Error parsing saved network data:', e);
+        }
+      }
+      return DEFAULT_NETWORK_DATA;
+    }
+
+    function saveNetworkData(data) {
+      localStorage.setItem('mingde_family_network_data', JSON.stringify(data));
+      updateClanCounts();
+    }
+
+    // 初始化 Vis.js 網絡圖
+    function initNetwork() {
+      const container = document.getElementById('networkCanvas');
+      networkData = loadSavedNetworkData();
+
+      // 配置節點與連線樣式
+      const visNodes = new vis.DataSet(networkData.nodes.map(n => formatVisNode(n)));
+      const visEdges = new vis.DataSet(networkData.edges.map(e => formatVisEdge(e)));
+
+      const options = {
+        nodes: {
+          shape: 'box',
+          margin: 10,
+          borderWidth: 2,
+          shadow: { enabled: true, color: 'rgba(0,0,0,0.5)', size: 8, x: 2, y: 3 },
+          font: {
+            color: '#f8fafc',
+            size: 13,
+            face: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
+          }
+        },
+        edges: {
+          font: {
+            color: '#94a3b8',
+            size: 11,
+            align: 'middle',
+            background: '#090d16'
+          },
+          smooth: {
+            type: 'continuous',
+            roundness: 0.2
+          },
+          arrows: {
+            to: { enabled: false }
+          }
+        },
+        physics: {
+          enabled: true,
+          solver: 'forceAtlas2Based',
+          forceAtlas2Based: {
+            gravitationalConstant: -70,
+            centralGravity: 0.015,
+            springLength: 120,
+            springConstant: 0.08,
+            damping: 0.4
+          },
+          stabilization: { iterations: 150 }
+        },
+        interaction: {
+          hover: true,
+          tooltipDelay: 100,
+          hideEdgesOnDrag: false,
+          multiselect: false
+        }
+      };
+
+      network = new vis.Network(container, { nodes: visNodes, edges: visEdges }, options);
+
+      // 點擊事件：點選節點高亮其鄰近節點並開啟側欄情報
+      network.on('click', function(params) {
+        if (params.nodes.length > 0) {
+          const nodeId = params.nodes[0];
+          openDossier(nodeId);
+          highlightNeighborhood(nodeId);
+        } else {
+          closeDossier();
+          resetHighlight();
+        }
+      });
+
+      populateClanFilter();
+      populateSelectDropdowns();
+      updateClanCounts();
+    }
+
+    // 格式化節點外觀
+    function formatVisNode(n) {
+      let bg = '#1e293b';
+      let border = '#475569';
+      let shape = 'box';
+      let fontColor = '#f8fafc';
+
+      if (n.group === 'landowner_male') {
+        bg = '#1e3a8a';
+        border = '#38bdf8';
+      } else if (n.group === 'landowner_female') {
+        bg = '#831843';
+        border = '#f472b6';
+      } else if (n.group === 'elder') {
+        bg = '#78350f';
+        border = '#fbbf24';
+      } else if (n.group === 'elder_female') {
+        bg = '#701a75';
+        border = '#f0abfc';
+      } else if (n.group === 'suspected_person') {
+        bg = '#451a03';
+        border = '#f97316';
+        shape = 'ellipse';
+      } else if (n.group === 'property') {
+        bg = '#064e3b';
+        border = '#10b981';
+        shape = 'box';
+      }
+
+      return {
+        id: n.id,
+        label: n.label,
+        shape: shape,
+        color: {
+          background: bg,
+          border: border,
+          highlight: { background: '#f59e0b', border: '#fbbf24' }
+        },
+        font: { color: fontColor, size: n.group === 'property' ? 12 : 13 }
+      };
+    }
+
+    // 格式化連線外觀
+    function formatVisEdge(e) {
+      let color = '#64748b';
+      let width = 2;
+      let dashes = e.dashes || false;
+
+      if (e.relation === '夫妻') {
+        color = '#ec4899';
+        width = 3;
+      } else if (e.relation === '父子' || e.relation === '母子') {
+        color = '#38bdf8';
+        width = 2.5;
+      } else if (e.relation === '兄弟手足') {
+        color = '#a855f7';
+        width = 2.5;
+      } else if (e.relation === '前夫/再婚') {
+        color = '#f97316';
+        width = 2.5;
+        dashes = true;
+      } else if (e.relation === '產權共有') {
+        color = '#10b981';
+        width = 1.5;
+      }
+
+      return {
+        from: e.from,
+        to: e.to,
+        label: e.label || e.relation,
+        color: { color: color, highlight: '#fbbf24' },
+        width: width,
+        dashes: dashes
+      };
+    }
+
+    // 高亮鄰近節點
+    function highlightNeighborhood(selectedNodeId) {
+      const connectedNodes = network.getConnectedNodes(selectedNodeId);
+      const allNodeIds = networkData.nodes.map(n => n.id);
+      
+      const updateArray = allNodeIds.map(id => {
+        if (id === selectedNodeId || connectedNodes.includes(id)) {
+          return { id: id, opacity: 1 };
+        } else {
+          return { id: id, opacity: 0.18 };
+        }
+      });
+      network.body.data.nodes.update(updateArray);
+    }
+
+    function resetHighlight() {
+      const allNodeIds = networkData.nodes.map(n => n.id);
+      const updateArray = allNodeIds.map(id => ({ id: id, opacity: 1 }));
+      network.body.data.nodes.update(updateArray);
+    }
+
+    // 展開右側人物檔案抽屜
+    function openDossier(nodeId) {
+      currentViewingNodeId = nodeId;
+      const node = networkData.nodes.find(n => n.id === nodeId);
+      if (!node) return;
+
+      const dossier = document.getElementById('rightDossier');
+      dossier.classList.remove('translate-x-full');
+
+      document.getElementById('dossierName').innerText = node.label.replace(/\\n/g, ' ');
+      document.getElementById('dossierClan').innerText = `${node.clan}氏家族`;
+      document.getElementById('dossierRole').innerText = node.role || '成員';
+      document.getElementById('dossierIdCode').innerText = node.id_code || '未有身分證字號';
+      document.getElementById('dossierNotesText').value = node.notes || '';
+      document.getElementById('dossierSaveStatus').innerText = '';
+
+      // 頭像更換
+      let avatar = '👤';
+      if (node.group.includes('female')) avatar = '👩';
+      else if (node.group === 'elder') avatar = '👴';
+      else if (node.group === 'property') avatar = '🏠';
+      else if (node.group === 'suspected_person') avatar = '❓';
+      document.getElementById('dossierAvatar').innerText = avatar;
+
+      // 持有房產列表
+      const propContainer = document.getElementById('dossierPropertiesList');
+      if (node.properties && node.properties.length > 0) {
+        propContainer.innerHTML = node.properties.map(p => `
+          <div class="px-2.5 py-1.5 rounded-lg bg-emerald-950/60 border border-emerald-700/60 text-emerald-300 font-bold flex items-center justify-between">
+            <span>🏠 ${p}</span>
+            <span class="text-[10px] text-emerald-400">登記所有權</span>
+          </div>
+        `).join('');
+      } else {
+        propContainer.innerHTML = `<div class="text-slate-500 italic p-1">（無直接登記建物門牌，或屬長輩親屬）</div>`;
+      }
+
+      // 關聯人列表
+      const relContainer = document.getElementById('dossierRelationsList');
+      const relatedEdges = networkData.edges.filter(e => e.from === nodeId || e.to === nodeId);
+      if (relatedEdges.length > 0) {
+        relContainer.innerHTML = relatedEdges.map(e => {
+          const otherId = e.from === nodeId ? e.to : e.from;
+          const otherNode = networkData.nodes.find(n => n.id === otherId);
+          const otherName = otherNode ? otherNode.label.replace(/\\n/g, ' ') : otherId;
+          const statusBadge = e.confirmed ? '<span class="text-emerald-400 font-bold">✔ 確定</span>' : '<span class="text-amber-400 font-bold">❓ 待查推測</span>';
+          return `
+            <div class="p-2 rounded-lg bg-slate-800/80 border border-slate-700 flex items-center justify-between cursor-pointer hover:border-slate-500" onclick="focusNode('${otherId}')">
+              <div>
+                <span class="font-bold text-slate-200">${otherName}</span>
+                <span class="text-[11px] text-indigo-300 ml-1.5 font-bold">[${e.label || e.relation}]</span>
+              </div>
+              <div>${statusBadge}</div>
+            </div>
+          `;
+        }).join('');
+      } else {
+        relContainer.innerHTML = `<div class="text-slate-500 italic p-1">（尚無記錄關係連線）</div>`;
+      }
+    }
+
+    function closeDossier() {
+      const dossier = document.getElementById('rightDossier');
+      dossier.classList.add('translate-x-full');
+      currentViewingNodeId = null;
+    }
+
+    function focusNode(nodeId) {
+      if (network) {
+        network.focus(nodeId, {
+          scale: 1.2,
+          animation: { duration: 600, easingFunction: 'easeInOutQuad' }
+        });
+        openDossier(nodeId);
+        highlightNeighborhood(nodeId);
+      }
+    }
+
+    // 儲存當前人員筆記
+    function saveCurrentDossierNotes() {
+      if (!currentViewingNodeId) return;
+      const notes = document.getElementById('dossierNotesText').value;
+      const node = networkData.nodes.find(n => n.id === currentViewingNodeId);
+      if (node) {
+        node.notes = notes;
+        saveNetworkData(networkData);
+        const statusEl = document.getElementById('dossierSaveStatus');
+        statusEl.innerText = '✔ 筆記已成功存檔！';
+        setTimeout(() => { statusEl.innerText = ''; }, 2500);
+      }
+    }
+
+    // 視野縮放置中
+    function fitNetworkView() {
+      if (network) network.fit({ animation: { duration: 600 } });
+    }
+
+    // 切換物理動態
+    function togglePhysics() {
+      physicsEnabled = !physicsEnabled;
+      network.setOptions({ physics: { enabled: physicsEnabled } });
+      const btn = document.getElementById('btnPhysics');
+      btn.innerHTML = physicsEnabled ? '<span>⚡</span> 物理動態：開啟' : '<span>🔒</span> 物理動態：鎖定固定';
+      btn.classList.toggle('text-amber-300', !physicsEnabled);
+    }
+
+    // 切換階層族譜 vs 自由網絡
+    function toggleLayoutMode() {
+      isHierarchical = !isHierarchical;
+      const btn = document.getElementById('btnToggleLayout');
+      if (isHierarchical) {
+        btn.innerHTML = '<span>🌐</span> 力導向自由模式';
+        btn.classList.add('bg-indigo-600', 'text-white');
+        network.setOptions({
+          layout: {
+            hierarchical: {
+              enabled: true,
+              direction: 'UD',
+              sortMethod: 'directed',
+              nodeSpacing: 160,
+              levelSeparation: 140
+            }
+          },
+          physics: { enabled: false }
+        });
+      } else {
+        btn.innerHTML = '<span>🌲</span> 族譜樹狀模式';
+        btn.classList.remove('bg-indigo-600', 'text-white');
+        network.setOptions({
+          layout: { hierarchical: { enabled: false } },
+          physics: { enabled: true }
+        });
+      }
+      setTimeout(() => fitNetworkView(), 300);
+    }
+
+    // 左側標籤切換
+    function switchSidebarTab(tab) {
+      document.getElementById('tabContentClues').classList.toggle('hidden', tab !== 'clues');
+      document.getElementById('tabContentClans').classList.toggle('hidden', tab !== 'clans');
+      
+      const btnClues = document.getElementById('tabBtnClues');
+      const btnClans = document.getElementById('tabBtnClans');
+      if (tab === 'clues') {
+        btnClues.className = 'py-2.5 text-center text-amber-300 border-b-2 border-amber-400 bg-slate-800/60 transition';
+        btnClans.className = 'py-2.5 text-center text-slate-400 hover:text-slate-200 transition';
+      } else {
+        btnClans.className = 'py-2.5 text-center text-amber-300 border-b-2 border-amber-400 bg-slate-800/60 transition';
+        btnClues.className = 'py-2.5 text-center text-slate-400 hover:text-slate-200 transition';
+      }
+    }
+
+    // 家族過濾清單
+    function populateClanFilter() {
+      const clans = ['柳', '蕭', '吳', '張', '林', '余', '江', '朱', '陳'];
+      const container = document.getElementById('clanFilterButtons');
+      if (!container) return;
+
+      container.innerHTML = clans.map(c => `
+        <button type="button" onclick="focusClan('${c}')" class="w-full text-left p-2 rounded-lg bg-slate-800/60 hover:bg-slate-700/80 text-slate-200 font-bold flex items-center justify-between border border-slate-700/60 transition">
+          <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-amber-400"></span> ${c}氏家族相關網絡</span>
+          <span class="text-[10px] text-amber-300 bg-amber-950/70 px-1.5 py-0.5 rounded border border-amber-700/60">焦點 ➔</span>
+        </button>
+      `).join('');
+    }
+
+    function focusClan(clan) {
+      const matchNodes = networkData.nodes.filter(n => n.clan === clan || (n.label && n.label.includes(clan)));
+      if (matchNodes.length === 0) return;
+
+      const nodeIds = matchNodes.map(n => n.id);
+      network.fit({
+        nodes: nodeIds,
+        animation: { duration: 600, easingFunction: 'easeInOutQuad' }
+      });
+
+      // 高亮這些節點
+      const allIds = networkData.nodes.map(n => n.id);
+      network.body.data.nodes.update(allIds.map(id => ({
+        id: id,
+        opacity: nodeIds.includes(id) ? 1 : 0.15
+      })));
+    }
+
+    function updateClanCounts() {
+      const total = networkData.nodes.filter(n => n.group !== 'property').length;
+      const el = document.getElementById('cntAllNodes');
+      if (el) el.innerText = `${total} 位成員`;
+    }
+
+    // 匯出圖譜 PNG
+    function exportCanvasPNG() {
+      const canvas = document.querySelector('#networkCanvas canvas');
+      if (!canvas) return;
+      const link = document.createElement('a');
+      link.download = `明德案_家族譜系與人物關係圖譜_${new Date().toISOString().slice(0,10)}.png`;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    }
+
+    // 匯出 JSON 備份
+    function exportGraphData() {
+      const blob = new Blob([JSON.stringify(networkData, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `明德案_地主家族人物網絡_${new Date().toISOString().slice(0,10)}.json`;
+      a.click();
+    }
+
+    // 新增關係對話框操作
+    function openAddRelationModal() {
+      document.getElementById('addRelationModal').classList.remove('hidden');
+      populateSelectDropdowns();
+    }
+
+    function closeAddRelationModal() {
+      document.getElementById('addRelationModal').classList.add('hidden');
+    }
+
+    function switchModalMode(mode) {
+      document.getElementById('modalFormEdge').classList.toggle('hidden', mode !== 'edge');
+      document.getElementById('modalFormNode').classList.toggle('hidden', mode !== 'node');
+      const btnEdge = document.getElementById('btnActionTypeEdge');
+      const btnNode = document.getElementById('btnActionTypeNode');
+      if (mode === 'edge') {
+        btnEdge.className = 'py-2 rounded-xl font-bold bg-indigo-600 text-white border border-indigo-500 text-center transition';
+        btnNode.className = 'py-2 rounded-xl font-bold bg-slate-800 text-slate-300 border border-slate-700 text-center transition';
+      } else {
+        btnNode.className = 'py-2 rounded-xl font-bold bg-indigo-600 text-white border border-indigo-500 text-center transition';
+        btnEdge.className = 'py-2 rounded-xl font-bold bg-slate-800 text-slate-300 border border-slate-700 text-center transition';
+      }
+    }
+
+    function populateSelectDropdowns() {
+      const fromSel = document.getElementById('edgeFromSelect');
+      const toSel = document.getElementById('edgeToSelect');
+      if (!fromSel || !toSel) return;
+
+      const opts = networkData.nodes.map(n => `<option value="${n.id}">${n.label.replace(/\\n/g, ' ')} (${n.clan}氏•${n.role})</option>`).join('');
+      fromSel.innerHTML = opts;
+      toSel.innerHTML = opts;
+      if (toSel.options.length > 1) toSel.selectedIndex = 1;
+    }
+
+    function submitModalData() {
+      const isEdge = !document.getElementById('modalFormEdge').classList.contains('hidden');
+      
+      if (isEdge) {
+        const from = document.getElementById('edgeFromSelect').value;
+        const to = document.getElementById('edgeToSelect').value;
+        const relation = document.getElementById('edgeRelationType').value;
+        const confirmed = document.querySelector('input[name="edgeConfirmedRadio"]:checked').value === 'true';
+        const note = document.getElementById('edgeNoteInput').value;
+
+        if (from === to) {
+          alert('請選擇兩位不同的人物進行連線！');
+          return;
+        }
+
+        const newEdge = {
+          from: from,
+          to: to,
+          label: relation + (confirmed ? '' : '？'),
+          relation: relation,
+          confirmed: confirmed,
+          dashes: !confirmed,
+          note: note
+        };
+
+        networkData.edges.push(newEdge);
+        saveNetworkData(networkData);
+        initNetwork();
+        closeAddRelationModal();
+      } else {
+        const name = document.getElementById('newNodeNameInput').value.trim();
+        const clan = document.getElementById('newNodeClanInput').value.trim() || '其他';
+        const role = document.getElementById('newNodeRoleSelect').value;
+        const gender = document.querySelector('input[name="newNodeGender"]:checked').value;
+        const notes = document.getElementById('newNodeNotesInput').value.trim();
+
+        if (!name) {
+          alert('請輸入成員姓名或稱謂！');
+          return;
+        }
+
+        const newId = 'p_' + Date.now();
+        const group = (role === 'elder' || role === 'spouse') 
+          ? (gender === '先生' ? 'elder' : 'elder_female')
+          : (gender === '先生' ? 'landowner_male' : 'landowner_female');
+
+        const newNode = {
+          id: newId,
+          label: `${name}\n(${gender})`,
+          group: group,
+          clan: clan,
+          role: role === 'elder' ? '長輩先人' : (role === 'spouse' ? '配偶外戚' : '地主成員'),
+          id_code: '--',
+          properties: [],
+          notes: notes
+        };
+
+        networkData.nodes.push(newNode);
+        saveNetworkData(networkData);
+        initNetwork();
+        closeAddRelationModal();
+        focusNode(newId);
+      }
+    }
+
+    window.addEventListener('DOMContentLoaded', initNetwork);
+  </script>
+</body>
+</html>
