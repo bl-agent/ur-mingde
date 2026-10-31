@@ -1839,34 +1839,17 @@
   <div id="paperSurveyScanModal" class="fixed inset-0 bg-slate-950/85 backdrop-blur-md z-80 flex items-center justify-center p-2 sm:p-4 hidden overflow-y-auto">
     <div class="bg-white rounded-3xl shadow-2xl border border-slate-300 w-full max-w-4xl my-auto overflow-hidden flex flex-col max-h-[96vh]">
       
-      <!-- Top Action Bar -->
-      <div class="bg-slate-900 px-5 py-3.5 text-white flex items-center justify-between no-print border-b border-slate-800">
-        <div class="flex items-center gap-3">
-          <span class="text-2xl p-1.5 bg-amber-500/20 rounded-xl text-amber-300">📄</span>
-          <div>
-            <div class="flex items-center gap-2">
-              <h3 class="text-sm font-black tracking-wide text-white" id="paperScanModalTitle">紙本調查表掃描檔原件</h3>
-              <span class="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/30 text-emerald-200 font-bold border border-emerald-400/30">真實訪視原檔</span>
+      <!-- Top Action Bar (單行乾淨標題，無擠壓按鈕，不設頂部重複X) -->
+      <div class="bg-slate-900 px-4 sm:px-6 py-3.5 text-white flex items-center justify-between no-print border-b border-slate-800">
+        <div class="flex items-center gap-2.5 w-full">
+          <span class="text-xl p-1 bg-amber-500/20 rounded-lg text-amber-300 shrink-0">📄</span>
+          <div class="min-w-0 flex-1">
+            <div class="flex items-center gap-2 flex-wrap">
+              <h3 class="text-sm sm:text-base font-black tracking-wide text-white truncate" id="paperScanModalTitle">紙本調查表掃描檔原件</h3>
+              <span class="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/30 text-emerald-200 font-bold border border-emerald-400/30 shrink-0">真實訪視原檔</span>
             </div>
-            <p class="text-[11px] text-slate-400" id="paperScanModalSubtitle">實地親訪紙本原件 (.pdf / .png / .jpg) • 原始掃描／翻拍原檔檢視與列印</p>
+            <p class="text-[11px] text-slate-400 truncate" id="paperScanModalSubtitle">實地親訪紙本原件 • 原始掃描／翻拍原檔檢視</p>
           </div>
-        </div>
-        <div class="flex items-center gap-2">
-          <!-- 縮放與旋轉工具列 -->
-          <div class="hidden sm:flex items-center gap-1 bg-slate-800 px-2 py-1 rounded-xl text-xs border border-slate-700">
-            <button type="button" onclick="zoomScanImage(0.1)" class="px-2 py-0.5 rounded hover:bg-slate-700 text-slate-300 font-bold" title="放大">🔍+</button>
-            <button type="button" onclick="zoomScanImage(-0.1)" class="px-2 py-0.5 rounded hover:bg-slate-700 text-slate-300 font-bold" title="縮小">🔍-</button>
-            <button type="button" onclick="resetScanZoom()" class="px-2 py-0.5 rounded hover:bg-slate-700 text-slate-300 font-bold" title="重設大小">100%</button>
-            <button type="button" onclick="rotateScanImage()" class="px-2 py-0.5 rounded hover:bg-slate-700 text-slate-300 font-bold" title="旋轉90度">🔄</button>
-          </div>
-
-          <button type="button" onclick="printPaperSurveyScan()" class="px-4 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs flex items-center gap-1.5 shadow-md transition">
-            🖨️ 列印掃描檔原件
-          </button>
-          <button type="button" onclick="deleteCurrentViewingScan()" class="px-3 py-1.5 rounded-xl bg-rose-950/80 hover:bg-rose-900 text-rose-200 border border-rose-700 font-bold text-xs flex items-center gap-1 shadow-md transition cursor-pointer" title="從本戶移除此掃描檔">
-            🗑️ 移除此掃描檔
-          </button>
-          <button type="button" onclick="closePaperSurveyScan()" class="w-8 h-8 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white flex items-center justify-center text-sm transition">✕</button>
         </div>
       </div>
 
@@ -1875,11 +1858,13 @@
         
         <!-- 原檔檢視容器 -->
         <div id="psScanOriginalContainer" class="w-full max-w-3xl bg-white shadow-2xl border border-slate-300 rounded-xl overflow-hidden flex flex-col items-center justify-center p-3 sm:p-6">
-          <div class="flex items-center justify-between w-full border-b pb-2 mb-3 text-[12px] font-bold text-slate-700 no-print">
-            <span id="psScanDocTitleTag">紙本問卷掃描原檔</span>
-            <div class="flex items-center gap-2">
-              <span class="text-[11px] text-slate-400 font-mono" id="psScanDocMeta">--</span>
-              <a id="psDownloadScanLink" href="#" download="問卷掃描檔" class="text-indigo-600 hover:underline text-[11px]">📥 下載原檔</a>
+          <div class="flex flex-col gap-1.5 w-full border-b pb-2.5 mb-3 text-left no-print">
+            <div class="text-xs sm:text-sm font-black text-slate-800 tracking-wide" id="psScanDocTitleTag">紙本問卷掃描原檔</div>
+            <div class="text-[11px] text-slate-500 font-mono leading-relaxed" id="psScanDocMeta">--</div>
+            <div class="pt-0.5">
+              <a id="psDownloadScanLink" href="#" download="問卷掃描檔" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold text-xs border border-indigo-200 shadow-2xs transition active:scale-95">
+                <span>📥</span> 下載掃描原檔
+              </a>
             </div>
           </div>
 
@@ -1892,10 +1877,23 @@
 
       </div>
 
-      <!-- Footer -->
-      <div class="p-3 bg-white border-t border-slate-200 flex items-center justify-between no-print">
-        <span class="text-[11px] text-slate-500">※ 點選「列印掃描檔原件」將直接以標準 A4 格式精確輸出紙本原檔。</span>
-        <button type="button" onclick="closePaperSurveyScan()" class="px-5 py-1.5 rounded-xl border border-slate-300 text-slate-700 hover:bg-slate-100 text-xs font-bold transition">
+      <!-- Footer (列印與移除按鈕移至下方，一律只顯示圖示防變形；下方關閉按鈕反白超醒目) -->
+      <div class="p-3 sm:p-4 bg-slate-900 border-t border-slate-800 flex items-center justify-between gap-3 no-print flex-wrap">
+        <div class="flex items-center gap-2 flex-wrap">
+          <button type="button" onclick="printPaperSurveyScan()" class="w-9 h-9 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black flex items-center justify-center text-sm shadow-md active:scale-95 transition cursor-pointer" title="列印掃描檔原件 (A4標準)">
+            🖨️
+          </button>
+          <button type="button" onclick="deleteCurrentViewingScan()" class="w-9 h-9 rounded-xl bg-rose-950/90 hover:bg-rose-900 text-rose-200 border border-rose-700 font-bold flex items-center justify-center text-sm shadow-md active:scale-95 transition cursor-pointer" title="從本戶移除此掃描檔">
+            🗑️
+          </button>
+          <div class="h-5 w-px bg-slate-700 mx-0.5"></div>
+          <button type="button" onclick="zoomScanImage(0.15)" class="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold border border-slate-700 flex items-center justify-center text-xs active:scale-95 transition" title="放大">🔍+</button>
+          <button type="button" onclick="zoomScanImage(-0.15)" class="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold border border-slate-700 flex items-center justify-center text-xs active:scale-95 transition" title="縮小">🔍-</button>
+          <button type="button" onclick="rotateScanImage()" class="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold border border-slate-700 flex items-center justify-center text-xs active:scale-95 transition" title="旋轉90度">🔄</button>
+          <button type="button" onclick="resetScanZoom()" class="px-2 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-[11px] font-bold border border-slate-700 flex items-center justify-center active:scale-95 transition" title="重設縮放">100%</button>
+        </div>
+
+        <button type="button" onclick="closePaperSurveyScan()" class="px-7 py-2 rounded-xl bg-white hover:bg-slate-100 text-slate-950 font-black text-sm shadow-xl active:scale-95 transition border border-slate-200 cursor-pointer">
           關閉
         </button>
       </div>
@@ -3951,14 +3949,14 @@
         scanRow.classList.remove('hidden');
         scanStatusText.innerText = `已上載掃描檔 (${scan.scan_filename || '.png'})`;
         scanActionBtns.innerHTML = `
-          <button type="button" onclick="closeVisitLogModal(); openScanUploadModal('${currentVlUnitKey}', '${currentVlOwner}', '${currentVlDisplayId}')" class="px-2.5 py-1 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold transition">
-            📤 重新上載
+          <button type="button" onclick="closeVisitLogModal(); openScanUploadModal('${currentVlUnitKey}', '${currentVlOwner}', '${currentVlDisplayId}')" class="w-9 h-9 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold inline-flex items-center justify-center text-sm shadow-2xs transition" title="重新上載">
+            📤
           </button>
-          <button type="button" onclick="handleViewScanFromVisitModal()" class="px-3 py-1 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black shadow-xs transition">
-            📄 查看
+          <button type="button" onclick="handleViewScanFromVisitModal()" class="w-9 h-9 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black inline-flex items-center justify-center text-sm shadow-xs transition" title="查看掃描檔">
+            📄
           </button>
-          <button type="button" onclick="deleteScanFromCurrentOwner()" class="px-2.5 py-1 rounded-xl bg-rose-950/80 hover:bg-rose-900 text-rose-300 border border-rose-700 font-bold transition cursor-pointer" title="移除此戶已綁定的掃描檔">
-            🗑️ 移除掃描檔
+          <button type="button" onclick="deleteScanFromCurrentOwner()" class="w-9 h-9 rounded-xl bg-rose-950/80 hover:bg-rose-900 text-rose-300 border border-rose-700 font-bold inline-flex items-center justify-center text-sm transition cursor-pointer" title="移除此戶已綁定的掃描檔">
+            🗑️
           </button>
         `;
       } else {
