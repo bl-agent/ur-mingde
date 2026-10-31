@@ -194,8 +194,7 @@
       <div class="flex flex-wrap items-center justify-between gap-4 border-b pb-4 mb-4">
         <div>
           <div class="flex items-center gap-2">
-            <span class="px-2.5 py-1 text-xs font-black rounded-lg bg-indigo-600 text-white shadow-xs">都更現場拜訪作業系統</span>
-            <h1 class="text-xl font-black text-slate-900">北投明德案 • 全體所有權人立體意向總覽（精確回報版）</h1>
+            <h1 class="text-xl font-black text-slate-900">都更拜訪系統·北投明德路都更案</h1>
           </div>
           <p class="text-xs text-slate-500 mt-1">
             全區 68 個產權單元 • <strong>全體所有權人持分總計 85 份（人次）</strong> • 依身分證去重獨立地主 64 人
@@ -208,15 +207,11 @@
             <span id="cloudStatusDot" class="w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse"></span>
             <span id="cloudStatusText">🟡 離線模式 (點擊串接雲端)</span>
           </button>
-          <button type="button" onclick="openScanUploadModal()" class="px-3.5 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-slate-950 font-black text-xs shadow-xs flex items-center gap-1.5 transition">
-            <span>📤</span> 上載紙本調查表掃描檔
-          </button>
+
           <a href="genealogy.html" class="px-3.5 py-1.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-black text-xs shadow-xs flex items-center gap-1.5 transition" title="檢視地主家族譜系、長輩婚姻與人物情報網絡圖譜">
             <span>🌳</span> 家族譜系與人物圖譜
           </a>
-          <button type="button" onclick="openMobileGuideModal()" class="px-3 py-1.5 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-300 font-black text-xs border border-indigo-200 shadow-2xs flex items-center gap-1.5 transition">
-            <span>📱</span> 手機/iPad 連線教學
-          </button>
+
 
         </div>
       </div>
@@ -307,13 +302,12 @@
     <!-- 檢視模式切換列 (桌機塔圖 vs 手機逐棟大卡片) -->
     <div class="flex items-center justify-between bg-white p-3 rounded-2xl border border-slate-200 shadow-2xs flex-wrap gap-2">
       <div class="flex items-center gap-2">
-        <span class="text-xs font-bold text-slate-500">檢視模式：</span>
         <div class="inline-flex rounded-xl bg-slate-100 p-1 text-xs font-bold">
           <button type="button" id="btnModeTower" onclick="switchViewMode('tower')" class="px-3 py-1.5 rounded-lg bg-white text-indigo-300 shadow-xs transition flex items-center gap-1">
-            <span>🏢</span> 全區立體塔圖
+            <span>🏢</span> 塔圖顯示
           </button>
           <button type="button" id="btnModeMobileCards" onclick="switchViewMode('cards')" class="px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 transition flex items-center gap-1">
-            <span>📱</span> 手機逐棟大卡片 (單手好點選)
+            <span>📱</span> 依門牌號碼
           </button>
         </div>
       </div>
@@ -367,6 +361,8 @@
     </div>
 
     
+    <!-- 塔圖顯示區塊容器 (切換為「依門牌號碼」時完整隱藏) -->
+    <div id="towerTablesSection" class="space-y-6">
     <!-- 同姓家族關聯快捷篩選與標記列 -->
     <div class="bg-white p-3.5 sm:p-5 rounded-2xl border border-slate-200 shadow-2xs space-y-3">
       <div class="flex items-center justify-between flex-wrap gap-2">
@@ -1049,12 +1045,14 @@
       </div>
     </div>
 
+    </div>
+
     <!-- 全區現場拜訪與意見回報清冊 (取代原先未實作的大數據區塊) -->
     <div class="bg-white rounded-2xl p-5 sm:p-6 shadow-sm border border-slate-200 space-y-4" id="visitRecordsSection">
       <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-700/80 pb-3">
         <div>
           <div class="flex items-center gap-2">
-            <span class="px-2.5 py-1 text-xs font-black rounded-lg bg-indigo-600 text-white shadow-xs">現場工作回報</span>
+            
             <h2 class="text-base font-black text-slate-100 flex items-center gap-2">
               <span>📜 現場拜訪與洽談紀錄清冊</span>
               <span class="text-xs px-2.5 py-0.5 rounded-full font-bold bg-indigo-950 text-indigo-300 border border-indigo-700" id="allVisitLogsCountBadge">共 0 筆</span>
@@ -1091,6 +1089,19 @@
             <!-- Populated by JS -->
           </tbody>
         </table>
+      </div>
+    </div>
+
+    <!-- 頁面底部：手機/iPad 連線教學按鈕與系統資訊 -->
+    <div class="py-4 border-t border-slate-800 flex flex-wrap items-center justify-between gap-3 text-xs text-slate-400 no-print">
+      <div class="flex items-center gap-2">
+        <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+        <span>都更拜訪系統 · 北投明德路都更案</span>
+      </div>
+      <div>
+        <button type="button" onclick="openMobileGuideModal()" class="px-3.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-indigo-300 font-bold text-xs border border-slate-700 shadow-2xs flex items-center gap-1.5 transition cursor-pointer">
+          <span>📱</span> 手機/iPad 連線教學
+        </button>
       </div>
     </div>
 
@@ -5038,17 +5049,20 @@
 
     function switchViewMode(mode) {
       const mobileSec = document.getElementById('mobileCardsSection');
+      const towerSec = document.getElementById('towerTablesSection');
       const btnTower = document.getElementById('btnModeTower');
       const btnCards = document.getElementById('btnModeMobileCards');
       if (mode === 'cards') {
         if (mobileSec) mobileSec.classList.remove('hidden');
+        if (towerSec) towerSec.classList.add('hidden');
         if (btnCards) btnCards.className = 'px-3 py-1.5 rounded-lg bg-indigo-600 text-white shadow-xs transition flex items-center gap-1';
         if (btnTower) btnTower.className = 'px-3 py-1.5 rounded-lg text-slate-400 hover:text-white transition flex items-center gap-1';
         renderMobileBuildingChips();
         renderMobileFloorCards(currentMobileBuilding);
-      renderAllVisitLogsTable();
+        renderAllVisitLogsTable();
       } else {
         if (mobileSec) mobileSec.classList.add('hidden');
+        if (towerSec) towerSec.classList.remove('hidden');
         if (btnTower) btnTower.className = 'px-3 py-1.5 rounded-lg bg-indigo-600 text-white shadow-xs transition flex items-center gap-1';
         if (btnCards) btnCards.className = 'px-3 py-1.5 rounded-lg text-slate-400 hover:text-white transition flex items-center gap-1';
       }
