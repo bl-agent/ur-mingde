@@ -217,9 +217,7 @@
           <button type="button" onclick="openMobileGuideModal()" class="px-3 py-1.5 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-300 font-black text-xs border border-indigo-200 shadow-2xs flex items-center gap-1.5 transition">
             <span>📱</span> 手機/iPad 連線教學
           </button>
-          <button type="button" onclick="resetAllSurveysConfirm()" class="px-3 py-1.5 rounded-xl bg-slate-50 hover:bg-red-50 text-slate-400 hover:text-red-600 font-bold text-xs border border-slate-200 transition">
-            清空暫存還原預設
-          </button>
+
         </div>
       </div>
 
@@ -3238,6 +3236,110 @@
     let surveyStore = {};
     let memoryScanCache = {}; // storeKey -> { dataUrl, fileName }
 
+    
+    function downscaleBase64Image(base64Data, maxDim = 1400, quality = 0.72) {
+      return new Promise((resolve) => {
+        if (!base64Data || base64Data.startsWith('data:application/pdf')) {
+          resolve(base64Data);
+          return;
+        }
+        const img = new Image();
+        img.onload = () => {
+          let w = img.width;
+          let h = img.height;
+          if (w > maxDim || h > maxDim) {
+            if (w > h) {
+              h = Math.round((h * maxDim) / w);
+              w = maxDim;
+            } else {
+              w = Math.round((w * maxDim) / h);
+              h = maxDim;
+            }
+          }
+          const canvas = document.createElement('canvas');
+          canvas.width = w;
+          canvas.height = h;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, w, h);
+          resolve(canvas.toDataURL('image/jpeg', quality));
+        };
+        img.onerror = () => resolve(base64Data);
+        img.src = base64Data;
+      });
+    }
+
+    async function getScanFromIDB(storeKey) {
+      try {
+        const db = await openScanIDB();
+        if (!db) return null;
+        return new Promise((resolve) => {
+          try {
+            const tx = db.transaction(IDB_STORE, 'readonly');
+            const req = tx.objectStore(IDB_STORE).get(storeKey);
+            req.onsuccess = () => resolve(req.result ? req.result.dataUrl : null);
+            req.onerror = () => resolve(null);
+          } catch(e) {
+            resolve(null);
+          }
+        });
+      } catch (err) {
+        return null;
+      }
+    }
+
+    async function getAllScansFromIDB() {
+      try {
+        const db = await openScanIDB();
+        if (!db) return [];
+        return new Promise((resolve) => {
+          try {
+            const tx = db.transaction(IDB_STORE, 'readonly');
+            const req = tx.objectStore(IDB_STORE).getAll();
+            req.onsuccess = () => resolve(req.result || []);
+            req.onerror = () => resolve([]);
+          } catch(e) {
+            resolve([]);
+          }
+        });
+      } catch (err) {
+        return [];
+      }
+    }
+
+    async function syncAllLocalScansToCloud() {
+      if (!firestoreDb) return;
+      try {
+        const allItems = await getAllScansFromIDB();
+        if (!allItems || allItems.length === 0) return;
+        let syncedCount = 0;
+        for (const item of allItems) {
+          const storeKey = item.storeKey;
+          if (!storeKey || !item.dataUrl) continue;
+          let dataUrl = item.dataUrl;
+          if (dataUrl.length > 800000) {
+            try {
+              dataUrl = await downscaleBase64Image(dataUrl, 1400, 0.72);
+            } catch(e) {}
+          }
+          const currentRec = surveyStore[storeKey] || {};
+          const uploadObj = Object.assign({}, currentRec, {
+            hasScan: true,
+            completed: currentRec.completed !== undefined ? currentRec.completed : true,
+            scanImageData: dataUrl,
+            scanFileName: item.fileName || currentRec.scanFileName || '掃描檔',
+            updatedAt: item.updatedAt || Date.now()
+          });
+          await firestoreDb.collection('beitou_mingde_surveys').doc(storeKey).set(uploadObj, { merge: true });
+          syncedCount++;
+        }
+        if (syncedCount > 0) {
+          console.log('[Cloud Sync] 已將本地 ' + syncedCount + ' 筆掃描檔自動推播至 Firebase 雲端！');
+        }
+      } catch (err) {
+        console.warn('同步本地掃描檔至雲端失敗：', err);
+      }
+    }
+
     function openScanIDB() {
       return new Promise((resolve) => {
         try {
@@ -3640,6 +3742,35 @@
         }
       }
 
+      // 若本地尚未快取，但雲端有連線，現場向 Firestore 即時拉取
+      if ((!data || !data.scan_image) && firestoreDb) {
+        const fullKey = getOwnerKey(unitKey, ownerName, ownerId);
+        const shortKey = `${unitKey}_${(ownerName || '').trim()}`;
+        try {
+          let docSnap = await firestoreDb.collection('beitou_mingde_surveys').doc(fullKey).get();
+          if (!docSnap.exists) {
+            docSnap = await firestoreDb.collection('beitou_mingde_surveys').doc(shortKey).get();
+          }
+          if (docSnap.exists) {
+            const dData = docSnap.data();
+            if (dData && dData.scanImageData) {
+              const matchedKey = docSnap.id;
+              memoryScanCache[matchedKey] = { dataUrl: dData.scanImageData, fileName: dData.scanFileName || '掃描檔' };
+              await saveScanToIDB(matchedKey, dData.scanImageData, dData.scanFileName || '掃描檔');
+              if (!surveyStore[matchedKey]) surveyStore[matchedKey] = dData;
+              surveyStore[matchedKey].hasScan = true;
+              data = {
+                scan_image: dData.scanImageData,
+                scan_filename: dData.scanFileName || `${unitKey}_掃描原檔.png`,
+                title: `${unitKey.replace('_', ' ')} • ${ownerName}${ownerId || ''}`,
+                meta: `已完成調查 ｜ 檔案：${dData.scanFileName || '掃描檔'}`
+              };
+            }
+          }
+        } catch(e) {
+          console.warn('向 Firestore 即時撈取掃描檔失敗：', e);
+        }
+      }
       if (!data || !data.scan_image) {
         if (confirm(`【${unitKey.replace('_', ' ')} • ${(ownerName || '')}${(ownerId || '')}】目前尚未上載掃描檔。\n\n是否立即開啟上載視窗，為此所有權人上傳紙本掃描檔？`)) {
           openScanUploadModal(unitKey, ownerName, ownerId);
@@ -4538,11 +4669,8 @@
         surveyStore[storeKey].hasScan = true;
         surveyStore[storeKey].completed = true;
         surveyStore[storeKey].option = optionCode;
-        if (currentUploadedScanDataUrl.length < 200000) {
-          surveyStore[storeKey].scanImageData = currentUploadedScanDataUrl;
-        } else {
-          delete surveyStore[storeKey].scanImageData;
-        }
+        // 圖檔本體交由 memoryScanCache、IndexedDB 與 syncStoreKeyToCloud 專屬上載至 Firestore
+        surveyStore[storeKey].scanImageData = currentUploadedScanDataUrl;
         surveyStore[storeKey].scanFileName = currentUploadedScanFileName;
         surveyStore[storeKey].signerName = signerNote || `${ownerName}${displayId}`;
 
@@ -4772,6 +4900,7 @@
         firestoreDb = firebase.firestore();
         updateCloudStatusUI(true, cfg.projectId);
         startFirestoreSyncListener();
+        syncAllLocalScansToCloud();
       } catch (err) {
         console.error('Firebase 自動連線失敗：', err);
         updateCloudStatusUI(false);
@@ -4862,15 +4991,33 @@
       });
     }
 
-    function syncStoreKeyToCloud(storeKey) {
+    async function syncStoreKeyToCloud(storeKey) {
       if (!firestoreDb || !surveyStore[storeKey]) return;
       try {
         const dataToUpload = Object.assign({}, surveyStore[storeKey]);
-        // 經 Canvas 壓縮後通常在 200KB 左右，800KB 以內均能完整上載至 Firestore 雲端跨裝置同步！
-        if (dataToUpload.scanImageData && dataToUpload.scanImageData.length > 800000) {
-          delete dataToUpload.scanImageData;
+        // 若雲端需要掃描圖檔，自動從記憶體或 IndexedDB 撈取
+        if (!dataToUpload.scanImageData && (dataToUpload.hasScan || memoryScanCache[storeKey])) {
+          const cached = memoryScanCache[storeKey];
+          let img = cached ? cached.dataUrl : null;
+          if (!img && typeof getScanFromIDB === 'function') {
+            img = await getScanFromIDB(storeKey);
+          }
+          if (img) {
+            dataToUpload.scanImageData = img;
+            if (!dataToUpload.scanFileName && cached && cached.fileName) {
+              dataToUpload.scanFileName = cached.fileName;
+            }
+          }
         }
-        firestoreDb.collection('beitou_mingde_surveys').doc(storeKey).set(dataToUpload);
+        // 經 Canvas 壓縮後通常在 150KB 左右，800KB 以內均能完整上載至 Firestore 雲端跨裝置同步！
+        if (dataToUpload.scanImageData && dataToUpload.scanImageData.length > 800000) {
+          try {
+            dataToUpload.scanImageData = await downscaleBase64Image(dataToUpload.scanImageData, 1400, 0.72);
+          } catch(e) {
+            delete dataToUpload.scanImageData;
+          }
+        }
+        await firestoreDb.collection('beitou_mingde_surveys').doc(storeKey).set(dataToUpload, { merge: true });
       } catch (err) {
         console.warn('同步至 Firestore 失敗：', err);
       }
