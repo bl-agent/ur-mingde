@@ -76,8 +76,21 @@
         </button>
       </div>
 
-      <button type="button" onclick="resetToInitialLiuClan()" class="px-2.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-amber-300 text-xs font-bold border border-slate-700 transition" title="恢復柳家核心起點（柳清、蕭吳美玉、柳金福）">
-        🔄 柳家起點
+            <!-- 家族快速聚焦按鈕 -->
+      <div class="hidden md:inline-flex rounded-xl bg-slate-800 p-0.5 border border-slate-700 text-xs font-bold">
+        <button type="button" onclick="filterClan('ALL')" id="btnClanAll" class="px-2.5 py-1.5 rounded-lg bg-indigo-600 text-white shadow-xs transition">
+          全部 (12位)
+        </button>
+        <button type="button" onclick="filterClan('林')" id="btnClanLin" class="px-2.5 py-1.5 rounded-lg text-slate-400 hover:text-white transition">
+          林氏 (10號棟)
+        </button>
+        <button type="button" onclick="filterClan('柳')" id="btnClanLiu" class="px-2.5 py-1.5 rounded-lg text-slate-400 hover:text-white transition">
+          柳氏 (12號棟)
+        </button>
+      </div>
+
+      <button type="button" onclick="resetToInitialLiuClan()" class="px-2.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-amber-300 text-xs font-bold border border-slate-700 transition" title="重設為預設家族名冊（林氏＋柳氏）">
+        🔄 重置範本
       </button>
       <button type="button" onclick="clearAllDataConfirm()" class="px-2.5 py-1.5 rounded-xl bg-rose-950/60 hover:bg-rose-900 text-rose-300 text-xs font-bold border border-rose-800/60 transition" title="完全清空畫布，從零開始輸入">
         🧹 完全清空
@@ -203,10 +216,11 @@
           <div>
             <label class="block font-bold text-slate-300 mb-1">輩份階層 (由上到下) <span class="text-rose-400">*</span></label>
             <select id="inputLevel" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-indigo-500">
-              <option value="1">第 1 代（父母長輩層）</option>
-              <option value="2" selected>第 2 代（子女晚輩層）</option>
-              <option value="3">第 3 代（孫輩層）</option>
-              <option value="0">第 0 代（祖父/祖先層）</option>
+              <option value="1">第 1 代（曾祖/長輩層）</option>
+              <option value="2">第 2 代（祖輩層）</option>
+              <option value="3">第 3 代（父輩層）</option>
+              <option value="4" selected>第 4 代（子輩/現任持有者）</option>
+              <option value="0">第 0 代（開基祖先層）</option>
             </select>
           </div>
           <div>
@@ -293,21 +307,25 @@
 
   <script>
     // 預設資料：僅保留柳家與蕭吳美玉核心起點，砍掉所有多餘蜘蛛網
-    const LIU_INITIAL_DATA = {
+        // 預設資料：包含柳氏家族核心與林氏家族四代親族
+    const INITIAL_GENEALOGY_DATA = {
       persons: [
+        // === 柳氏家族 ===
         {
           id: 'p_liu_qing',
           name: '柳清',
-          level: 1, // 第1代：父母長輩層
+          clan: '柳',
+          level: 1, // 第1代：長輩層
           gender: 'male',
-          idCode: '', // 若無身分證則不顯示
-          doors: [], // 長輩若無直接持有門牌則留空
+          idCode: '',
+          doors: [],
           notes: '柳家老長輩，配偶蕭吳美玉，育有柳金福等人。'
         },
         {
           id: 'p_xiao_wu_meiyu',
           name: '蕭吳美玉',
-          level: 1, // 第1代：父母長輩層
+          clan: '蕭',
+          level: 1, // 第1代：長輩層
           gender: 'female',
           idCode: '',
           doors: [],
@@ -316,21 +334,130 @@
         {
           id: 'p_liu_jinfu',
           name: '柳金福',
-          level: 2, // 第2代：子女晚輩層 (在父母下方)
+          clan: '柳',
+          level: 2, // 第2代：晚輩層
           gender: 'male',
-          idCode: '', // 謄本資訊
+          idCode: '',
           doors: ['明德路215巷2弄12號 1樓'],
           notes: '父柳清、母蕭吳美玉。為2弄12號1樓所有權人。'
+        },
+
+        // === 林氏家族 (10號棟核心四代脈絡) ===
+        {
+          id: 'p_lin_qingquan',
+          name: '林清全',
+          clan: '林',
+          level: 1, // 第1代：曾祖長輩層
+          gender: 'male',
+          idCode: '',
+          doors: [],
+          notes: '林氏家族長輩，配偶林圳吉，育有林進財、林春雄等。'
+        },
+        {
+          id: 'p_lin_zhenji',
+          name: '林圳吉',
+          clan: '林',
+          level: 1, // 第1代：曾祖長輩層
+          gender: 'female',
+          idCode: '',
+          doors: [],
+          notes: '林清全之妻，育有林進財、林春雄。'
+        },
+        {
+          id: 'p_lin_jincai',
+          name: '林進財',
+          clan: '林',
+          level: 2, // 第2代：祖輩
+          gender: 'male',
+          idCode: '',
+          doors: [],
+          notes: '父林清全、母林圳吉，育有子林俊賢，孫為林韋安。'
+        },
+        {
+          id: 'p_lin_chunxiong',
+          name: '林春雄',
+          clan: '林',
+          level: 2, // 第2代：祖輩
+          gender: 'male',
+          idCode: '',
+          doors: [],
+          notes: '父林清全、母林圳吉，配偶林蕭清惠，育有林奇民（吉奇）、林佩怡。'
+        },
+        {
+          id: 'p_lin_xiao_qinghui',
+          name: '林蕭清惠',
+          clan: '蕭',
+          level: 2, // 第2代：配偶
+          gender: 'female',
+          idCode: '',
+          doors: [],
+          notes: '林春雄之妻，本姓蕭（冠夫姓林）。再次印證蕭氏家族在本地段之深厚聯姻脈絡！'
+        },
+        {
+          id: 'p_lin_junxian',
+          name: '林俊賢',
+          clan: '林',
+          level: 3, // 第3代：父輩
+          gender: 'male',
+          idCode: '',
+          doors: [],
+          notes: '父林進財，育有子林韋安。'
+        },
+        {
+          id: 'p_lin_qimin',
+          name: '林奇民 (吉奇)',
+          clan: '林',
+          level: 3, // 第3代：父輩
+          gender: 'male',
+          idCode: 'Y120*4',
+          doors: ['明德路215巷2弄10號 2樓'],
+          notes: '父林春雄、母林蕭清惠，原名林奇民，後改名為吉奇。現為10號2樓所有權人。'
+        },
+        {
+          id: 'p_lin_peiyi',
+          name: '林佩怡',
+          clan: '林',
+          level: 3, // 第3代：父輩
+          gender: 'female',
+          idCode: '',
+          doors: [],
+          notes: '父林春雄、母林蕭清惠。'
+        },
+        {
+          id: 'p_lin_weian',
+          name: '林韋安',
+          clan: '林',
+          level: 4, // 第4代：子輩 (現任持有者)
+          gender: 'male',
+          idCode: 'A129*6',
+          doors: ['明德路215巷2弄10號 1樓'],
+          notes: '父林俊賢，祖父林進財，曾祖父林清全。現為10號1樓所有權人。'
         }
       ],
       relations: [
-        { id: 'r_1', from: 'p_liu_qing', to: 'p_xiao_wu_meiyu', type: 'spouse_current', label: '夫妻' },
-        { id: 'r_2', from: 'p_liu_qing', to: 'p_liu_jinfu', type: 'parent_child', label: '父子' },
-        { id: 'r_3', from: 'p_xiao_wu_meiyu', to: 'p_liu_jinfu', type: 'parent_child', label: '母子' }
+        // 柳家關係
+        { id: 'r_liu_1', from: 'p_liu_qing', to: 'p_xiao_wu_meiyu', type: 'spouse_current', label: '夫妻' },
+        { id: 'r_liu_2', from: 'p_liu_qing', to: 'p_liu_jinfu', type: 'parent_child', label: '父子' },
+        { id: 'r_liu_3', from: 'p_xiao_wu_meiyu', to: 'p_liu_jinfu', type: 'parent_child', label: '母子' },
+
+        // 林家關係 (四代脈絡)
+        { id: 'r_lin_1', from: 'p_lin_qingquan', to: 'p_lin_zhenji', type: 'spouse_current', label: '夫妻' },
+        { id: 'r_lin_2', from: 'p_lin_qingquan', to: 'p_lin_jincai', type: 'parent_child', label: '父子' },
+        { id: 'r_lin_3', from: 'p_lin_zhenji', to: 'p_lin_jincai', type: 'parent_child', label: '母子' },
+        { id: 'r_lin_4', from: 'p_lin_qingquan', to: 'p_lin_chunxiong', type: 'parent_child', label: '父子' },
+        { id: 'r_lin_5', from: 'p_lin_zhenji', to: 'p_lin_chunxiong', type: 'parent_child', label: '母子' },
+        { id: 'r_lin_6', from: 'p_lin_jincai', to: 'p_lin_chunxiong', type: 'siblings', label: '兄弟' },
+        { id: 'r_lin_7', from: 'p_lin_chunxiong', to: 'p_lin_xiao_qinghui', type: 'spouse_current', label: '夫妻' },
+        { id: 'r_lin_8', from: 'p_lin_jincai', to: 'p_lin_junxian', type: 'parent_child', label: '父子' },
+        { id: 'r_lin_9', from: 'p_lin_chunxiong', to: 'p_lin_qimin', type: 'parent_child', label: '父子' },
+        { id: 'r_lin_10', from: 'p_lin_xiao_qinghui', to: 'p_lin_qimin', type: 'parent_child', label: '母子' },
+        { id: 'r_lin_11', from: 'p_lin_chunxiong', to: 'p_lin_peiyi', type: 'parent_child', label: '父女' },
+        { id: 'r_lin_12', from: 'p_lin_xiao_qinghui', to: 'p_lin_peiyi', type: 'parent_child', label: '母女' },
+        { id: 'r_lin_13', from: 'p_lin_junxian', to: 'p_lin_weian', type: 'parent_child', label: '父子' }
       ]
     };
 
-    const STORAGE_KEY = 'mingde_hierarchical_genealogy_v2';
+    const STORAGE_KEY = 'mingde_hierarchical_genealogy_v3';
     let appData = loadAppData();
     let network = null;
     let selectedPersonId = null;
@@ -344,7 +471,7 @@
           console.warn('載入族譜儲存失敗：', e);
         }
       }
-      return JSON.parse(JSON.stringify(LIU_INITIAL_DATA));
+      return JSON.parse(JSON.stringify(INITIAL_GENEALOGY_DATA));
     }
 
     function saveAppData() {
@@ -376,12 +503,15 @@
       if (person.level === 0) {
         borderColor = '#a855f7'; // 紫色 祖輩
       } else if (person.level === 1) {
-        borderColor = '#f59e0b'; // 金黃 父母輩
+        borderColor = '#f59e0b'; // 金黃 曾祖長輩
         borderWidth = 3;
       } else if (person.level === 2) {
-        borderColor = '#3b82f6'; // 藍色 子女輩
+        borderColor = '#3b82f6'; // 藍色 祖輩
       } else if (person.level === 3) {
-        borderColor = '#10b981'; // 綠色 孫輩
+        borderColor = '#10b981'; // 綠色 父輩
+      } else if (person.level === 4) {
+        borderColor = '#06b6d4'; // 青藍 現任持有者
+        borderWidth = 3;
       }
 
       return {
@@ -444,10 +574,34 @@
     }
 
     // 初始化階層族譜圖
+    
+    let activeFilterClan = 'ALL';
+
+    function filterClan(clan) {
+      activeFilterClan = clan;
+      const btnAll = document.getElementById('btnClanAll');
+      const btnLin = document.getElementById('btnClanLin');
+      const btnLiu = document.getElementById('btnClanLiu');
+
+      if (btnAll) btnAll.className = clan === 'ALL' ? 'px-2.5 py-1.5 rounded-lg bg-indigo-600 text-white shadow-xs transition' : 'px-2.5 py-1.5 rounded-lg text-slate-400 hover:text-white transition';
+      if (btnLin) btnLin.className = clan === '林' ? 'px-2.5 py-1.5 rounded-lg bg-indigo-600 text-white shadow-xs transition' : 'px-2.5 py-1.5 rounded-lg text-slate-400 hover:text-white transition';
+      if (btnLiu) btnLiu.className = clan === '柳' ? 'px-2.5 py-1.5 rounded-lg bg-indigo-600 text-white shadow-xs transition' : 'px-2.5 py-1.5 rounded-lg text-slate-400 hover:text-white transition';
+
+      renderVisNetwork();
+      renderGenerationalListView();
+    }
+
     function renderVisNetwork() {
       const container = document.getElementById('networkContainer');
-      const visNodes = new vis.DataSet(appData.persons.map(p => formatPersonToVisNode(p)));
-      const visEdges = new vis.DataSet(appData.relations.map(r => formatRelationToVisEdge(r)));
+      let filteredPersons = appData.persons;
+      if (activeFilterClan && activeFilterClan !== 'ALL') {
+        filteredPersons = appData.persons.filter(p => p.clan === activeFilterClan || (activeFilterClan === '林' && p.clan === '蕭') || (activeFilterClan === '柳' && p.clan === '蕭'));
+      }
+      const personIds = new Set(filteredPersons.map(p => p.id));
+      const filteredRelations = appData.relations.filter(r => personIds.has(r.from) && personIds.has(r.to));
+
+      const visNodes = new vis.DataSet(filteredPersons.map(p => formatPersonToVisNode(p)));
+      const visEdges = new vis.DataSet(filteredRelations.map(r => formatRelationToVisEdge(r)));
 
       const options = {
         layout: {
@@ -532,10 +686,11 @@
       wrapper.innerHTML = '';
 
       const levels = [
-        { level: 0, title: '【 第 0 代 • 祖父／祖先長輩層 】', color: 'border-purple-600 text-purple-300' },
-        { level: 1, title: '【 第 1 代 • 父母長輩層 】', color: 'border-amber-500 text-amber-300' },
-        { level: 2, title: '【 第 2 代 • 子女晚輩層 】', color: 'border-blue-500 text-blue-300' },
-        { level: 3, title: '【 第 3 代 • 孫輩後代層 】', color: 'border-emerald-500 text-emerald-300' }
+        { level: 0, title: '【 第 0 代 • 祖先長輩層 】', color: 'border-purple-600 text-purple-300' },
+        { level: 1, title: '【 第 1 代 • 曾祖／高祖長輩層 】', color: 'border-amber-500 text-amber-300' },
+        { level: 2, title: '【 第 2 代 • 祖輩／長輩層 】', color: 'border-blue-500 text-blue-300' },
+        { level: 3, title: '【 第 3 代 • 父輩／青壯層 】', color: 'border-emerald-500 text-emerald-300' },
+        { level: 4, title: '【 第 4 代 • 子輩／現任持有地主層 】', color: 'border-cyan-500 text-cyan-300' }
       ];
 
       levels.forEach(g => {
@@ -801,7 +956,7 @@
     // 重設為柳家起點
     function resetToInitialLiuClan() {
       if (!confirm('確定要重置為柳家核心起點（柳清、蕭吳美玉、柳金福）嗎？')) return;
-      appData = JSON.parse(JSON.stringify(LIU_INITIAL_DATA));
+      appData = JSON.parse(JSON.stringify(INITIAL_GENEALOGY_DATA));
       saveAppData();
       closePersonDrawer();
       renderVisNetwork();
