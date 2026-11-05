@@ -51,7 +51,7 @@
           <span>地主家族譜系表</span>
           <span class="text-xs px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 font-bold border border-amber-500/30">北投明德案</span>
         </h1>
-        <p class="text-[11px] text-slate-400 hidden sm:block">塔圖單元格卡片風格 • 顯示姓名 ➔ 下一行身分證 ➔ 下一行門牌號碼</p>
+        <p class="text-[11px] text-slate-400 hidden sm:block">塔圖單元格卡片風格 • 顯示姓名 ➔ 下一行身分證 ➔ 下一行門牌號碼 (姓名與身分證皆可即時編輯)</p>
       </div>
     </div>
 
@@ -59,7 +59,7 @@
     <div class="flex items-center gap-2">
       <!-- 核心醒目按鈕：選擇68戶地主放入畫布 -->
       <button type="button" onclick="togglePickerPanel()" class="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs shadow-lg shadow-amber-500/20 flex items-center gap-1.5 transition active:scale-95 border border-amber-300 cursor-pointer">
-        <span>📋</span> 選擇68戶地主 (<span id="canvasCountBadge">0</span>/82已放)
+        <span>📋</span> 選擇68戶地主 (<span id="canvasCountBadge">0</span>/79已放)
       </button>
 
       <!-- 自訂新增長輩/人物 -->
@@ -156,16 +156,16 @@
       <!-- 畫面左下角：卡片格式說明圖例 (塔圖風格概念) -->
       <div class="absolute bottom-4 left-4 bg-slate-900/90 border border-slate-800 rounded-2xl p-3.5 text-xs backdrop-blur-md shadow-2xl space-y-2 pointer-events-auto max-w-xs">
         <div class="font-bold text-white flex items-center justify-between border-b border-slate-800 pb-1.5">
-          <span>📇 人物卡片顯示格式</span>
-          <span class="text-[10px] text-amber-400 font-bold">塔圖單元格風格</span>
+          <span>📇 人物卡片格式 (塔圖風格)</span>
+          <span class="text-[10px] text-amber-400 font-bold">點擊卡片可編輯</span>
         </div>
         <div class="bg-slate-950 p-2.5 rounded-xl border border-slate-800 text-left space-y-1">
-          <div class="text-sm font-black text-white">1. 姓名 (第一行)</div>
-          <div class="text-[11px] font-mono text-slate-400">2. 身分證字號 (第二行)</div>
-          <div class="text-[11px] text-sky-400 font-semibold">3. 🏠 門牌號碼 (第三行起)</div>
+          <div class="text-sm font-black text-white">姓名 (第一行 • 可編輯)</div>
+          <div class="text-[11px] font-mono text-slate-300">身分證字號 (第二行 • 可編輯)</div>
+          <div class="text-[11px] text-sky-400 font-semibold">🏠 門牌號碼 (第三行起)</div>
         </div>
         <div class="text-[10px] text-slate-400 pt-0.5">
-          由上而下代際排列：長輩在上方，子女晚輩在下方。
+          💡 點擊任一卡片，右側可直接修改姓名、身分證與門牌。
         </div>
       </div>
 
@@ -184,19 +184,16 @@
       </div>
     </div>
 
-    <!-- 右側人物詳情與筆記側邊抽屜 -->
-    <div id="personDetailDrawer" class="hidden w-80 sm:w-96 bg-slate-900 border-l border-slate-800 flex flex-col shrink-0 z-30 shadow-2xl transition-all duration-200">
+    <!-- 右側人物詳情與即時編輯側邊抽屜 (姓名與身分證可直接編輯) -->
+    <div id="personDetailDrawer" class="hidden w-84 sm:w-96 bg-slate-900 border-l border-slate-800 flex flex-col shrink-0 z-30 shadow-2xl transition-all duration-200">
       <div class="p-4 border-b border-slate-800 flex items-center justify-between bg-slate-850">
         <div class="flex items-center gap-2">
           <span class="text-lg">👤</span>
-          <h3 class="text-sm font-black text-white" id="drawerPersonName">人物檔案</h3>
+          <h3 class="text-sm font-black text-white" id="drawerPersonTitle">編輯人物資料</h3>
         </div>
         <div class="flex items-center gap-1">
-          <button type="button" onclick="editCurrentSelectedPerson()" class="p-1.5 rounded-lg text-indigo-400 hover:bg-slate-800 transition text-xs font-bold" title="編輯此人物資料">
-            ✏️ 編輯
-          </button>
           <button type="button" onclick="removeCurrentPersonFromCanvas()" class="p-1.5 rounded-lg text-amber-400 hover:bg-slate-800 transition text-xs font-bold" title="從畫面上收回名冊庫">
-            ↩️ 收回
+            ↩️ 收回名冊
           </button>
           <button type="button" onclick="deleteCurrentSelectedPerson()" class="p-1.5 rounded-lg text-rose-400 hover:bg-slate-800 transition text-xs font-bold" title="徹底刪除此人物">
             🗑️ 刪除
@@ -208,27 +205,67 @@
       </div>
 
       <div class="p-4 space-y-4 flex-1 overflow-y-auto custom-scrollbar text-xs">
-        <!-- 基本資訊卡 -->
-        <div class="bg-slate-950 p-3.5 rounded-xl border border-slate-800 space-y-2">
-          <div class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">身分與世代資訊</div>
-          <div class="space-y-1.5">
-            <div><span class="text-slate-500">姓名：</span> <span id="drawerName" class="text-white font-bold text-sm"></span></div>
-            <div><span class="text-slate-500">身分證字號：</span> <span id="drawerIdCode" class="text-slate-300 font-mono"></span></div>
-            <div><span class="text-slate-500">世代階層：</span> <span id="drawerGeneration" class="text-amber-400 font-bold"></span></div>
+        
+        <!-- 即時編輯區塊：姓名與身分證可直接編輯修改 -->
+        <div class="bg-slate-950 p-4 rounded-xl border border-indigo-900/50 space-y-3 shadow-md">
+          <div class="text-[11px] font-bold text-indigo-400 flex items-center justify-between">
+            <span>✏️ 快速編輯姓名與身分證</span>
+            <span class="text-[10px] text-slate-500">修改後即時生效</span>
+          </div>
+
+          <div>
+            <label class="block font-bold text-slate-300 mb-1">姓名 (第一行顯示)：</label>
+            <input type="text" id="drawerInputName" oninput="saveDrawerInlineEdits()" placeholder="例如：柳金福、林韋安、林奇民" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white font-black text-sm focus:outline-none focus:border-indigo-500 shadow-inner">
+          </div>
+
+          <div>
+            <label class="block font-bold text-slate-300 mb-1">身分證字號 (第二行顯示)：</label>
+            <input type="text" id="drawerInputIdCode" oninput="saveDrawerInlineEdits()" placeholder="例如：A129*6、Y120*4" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white font-mono text-xs focus:outline-none focus:border-indigo-500 shadow-inner">
+          </div>
+
+          <div class="grid grid-cols-2 gap-2 pt-1">
+            <div>
+              <label class="block font-bold text-slate-400 mb-1">世代層級：</label>
+              <select id="drawerInputLevel" onchange="saveDrawerInlineEdits()" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2 py-1.5 text-white font-medium focus:outline-none focus:border-indigo-500">
+                <option value="1">第1代 父母/曾祖</option>
+                <option value="2">第2代 祖輩/第二代</option>
+                <option value="3">第3代 父輩/第三代</option>
+                <option value="4">第4代 曾孫/現任</option>
+                <option value="0">第0代 祖先長輩</option>
+              </select>
+            </div>
+            <div>
+              <label class="block font-bold text-slate-400 mb-1">性別稱謂：</label>
+              <select id="drawerInputGender" onchange="saveDrawerInlineEdits()" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2 py-1.5 text-white focus:outline-none focus:border-indigo-500">
+                <option value="male">男性</option>
+                <option value="female">女性</option>
+                <option value="other">其他/長輩</option>
+              </select>
+            </div>
           </div>
         </div>
 
-        <!-- 持有門牌與樓層清冊 -->
+        <!-- 持有門牌號碼清冊 (可新增與編輯) -->
         <div class="bg-slate-950 p-3.5 rounded-xl border border-slate-800 space-y-2">
-          <div class="text-[10px] font-bold text-sky-400 uppercase tracking-wider">持有門牌號碼 (若多於一個皆列出)</div>
-          <div id="drawerDoorsList" class="space-y-1.5 text-slate-200">
-            <!-- Rendered via JS -->
+          <div class="flex items-center justify-between">
+            <span class="text-[10px] font-bold text-sky-400 uppercase tracking-wider">持有門牌號碼 (第三行起顯示)</span>
+            <span class="text-[10px] text-slate-500">多筆換行顯示</span>
+          </div>
+          <div>
+            <textarea id="drawerInputDoors" oninput="saveDrawerInlineEdits()" rows="2" placeholder="每行一個門牌，例如：
+2弄10號 1F
+明德路225號 4F" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-2.5 text-white text-xs leading-relaxed focus:outline-none focus:border-indigo-500"></textarea>
           </div>
         </div>
 
         <!-- 親屬網絡關聯 -->
         <div class="bg-slate-950 p-3.5 rounded-xl border border-slate-800 space-y-2">
-          <div class="text-[10px] font-bold text-indigo-400 uppercase tracking-wider">族譜親屬與婚姻連線</div>
+          <div class="flex items-center justify-between">
+            <span class="text-[10px] font-bold text-indigo-400 uppercase tracking-wider">族譜親屬與婚姻連線</span>
+            <button type="button" onclick="openAddRelationModalWithCurrent()" class="text-indigo-400 hover:text-indigo-300 font-bold text-[10px] hover:underline">
+              ＋ 建立連線
+            </button>
+          </div>
           <div id="drawerRelationsList" class="space-y-1 text-slate-300">
             <!-- Rendered via JS -->
           </div>
@@ -236,21 +273,22 @@
 
         <!-- 筆記與情資備註 -->
         <div class="bg-slate-950 p-3.5 rounded-xl border border-slate-800 space-y-1.5">
-          <div class="text-[10px] font-bold text-amber-400 uppercase tracking-wider">背景情資與傳聞備註</div>
-          <div id="drawerNotes" class="text-slate-300 leading-relaxed whitespace-pre-wrap">--</div>
+          <span class="text-[10px] font-bold text-amber-400 uppercase tracking-wider">背景情資與傳聞備註</span>
+          <textarea id="drawerInputNotes" oninput="saveDrawerInlineEdits()" rows="2" placeholder="輸入此人的家庭關係、婚姻傳聞或拜訪備註..." class="w-full bg-slate-900 border border-slate-700 rounded-xl p-2.5 text-slate-200 text-xs focus:outline-none focus:border-indigo-500"></textarea>
         </div>
+
       </div>
     </div>
 
   </div>
 
-  <!-- MODAL: 新增/編輯人物對話框 -->
+  <!-- MODAL: 自訂新增人物對話框 -->
   <div id="personModal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
     <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-lg w-full shadow-2xl overflow-hidden flex flex-col">
       <div class="px-5 py-4 border-b border-slate-800 flex items-center justify-between bg-slate-850">
         <div class="flex items-center gap-2">
           <span class="text-base p-1 bg-indigo-500/20 text-indigo-300 rounded-lg">👤</span>
-          <h3 class="text-sm font-black text-white" id="personModalTitle">編輯/自訂新增人物</h3>
+          <h3 class="text-sm font-black text-white" id="personModalTitle">自訂新增族譜人物</h3>
         </div>
         <button type="button" onclick="closePersonModal()" class="text-slate-400 hover:text-white text-sm">✕</button>
       </div>
@@ -362,11 +400,11 @@
   </div>
 
   <script>
-    // 68 戶全部屋主名冊預建資料庫 (共 82 位所有權人份額)
-    const PREBUILT_LANDOWNERS = [{"id": "lo_1", "person_key": "蕭_A129*6", "surname": "蕭", "name": "蕭氏", "id_code": "A129*6", "doors": ["217號 4F"], "area": "A", "level": 2}, {"id": "lo_2", "person_key": "蕭_A222*9", "surname": "蕭", "name": "蕭氏", "id_code": "A222*9", "doors": ["217號 4F"], "area": "A", "level": 2}, {"id": "lo_3", "person_key": "蕭_A222*8", "surname": "蕭", "name": "蕭氏", "id_code": "A222*8", "doors": ["217號 4F"], "area": "A", "level": 2}, {"id": "lo_4", "person_key": "余_A128*8", "surname": "余", "name": "余先生", "id_code": "A128*8", "doors": ["219號 4F"], "area": "A", "level": 2}, {"id": "lo_5", "person_key": "余_A232*0", "surname": "余", "name": "余小姐", "id_code": "A232*0", "doors": ["219號 4F"], "area": "A", "level": 2}, {"id": "lo_6", "person_key": "余_A133*8", "surname": "余", "name": "余先生", "id_code": "A133*8", "doors": ["219號 4F"], "area": "A", "level": 2}, {"id": "lo_7", "person_key": "朱_P233*3", "surname": "朱", "name": "朱小姐", "id_code": "P233*3", "doors": ["219號 4F"], "area": "A", "level": 2}, {"id": "lo_8", "person_key": "何_F121*3", "surname": "何", "name": "何氏", "id_code": "F121*3", "doors": ["221號 4F"], "area": "A", "level": 2}, {"id": "lo_9", "person_key": "林_Y120*5", "surname": "林", "name": "林氏", "id_code": "Y120*5", "doors": ["223號 4F"], "area": "A", "level": 2}, {"id": "lo_10", "person_key": "柳_Y100*0", "surname": "柳", "name": "柳金福", "id_code": "Y100*0", "doors": ["225號 4F", "2弄12號 1F"], "area": "A", "level": 2}, {"id": "lo_11", "person_key": "簡_A122*1", "surname": "簡", "name": "簡氏", "id_code": "A122*1", "doors": ["227號 4F"], "area": "A", "level": 2}, {"id": "lo_12", "person_key": "江_A222*9", "surname": "江", "name": "江氏", "id_code": "A222*9", "doors": ["229號 4F"], "area": "A", "level": 2}, {"id": "lo_13", "person_key": "江_A129*6", "surname": "江", "name": "江氏", "id_code": "A129*6", "doors": ["231號 4F"], "area": "A", "level": 2}, {"id": "lo_14", "person_key": "江_A129*2", "surname": "江", "name": "江氏", "id_code": "A129*2", "doors": ["231號 4F"], "area": "A", "level": 2}, {"id": "lo_15", "person_key": "陳_R100*6", "surname": "陳", "name": "陳氏", "id_code": "R100*6", "doors": ["233號 4F"], "area": "A", "level": 2}, {"id": "lo_16", "person_key": "張_K221*3", "surname": "張", "name": "張氏", "id_code": "K221*3", "doors": ["235號 4F"], "area": "A", "level": 2}, {"id": "lo_17", "person_key": "林_G200*5", "surname": "林", "name": "林氏", "id_code": "G200*5", "doors": ["217號 3F"], "area": "A", "level": 2}, {"id": "lo_18", "person_key": "余_Y120*3", "surname": "余", "name": "余氏", "id_code": "Y120*3", "doors": ["219號 3F"], "area": "A", "level": 2}, {"id": "lo_19", "person_key": "林_Y120*3", "surname": "林", "name": "林氏", "id_code": "Y120*3", "doors": ["221號 3F"], "area": "A", "level": 2}, {"id": "lo_20", "person_key": "林_Y220*9", "surname": "林", "name": "林氏", "id_code": "Y220*9", "doors": ["223號 3F"], "area": "A", "level": 2}, {"id": "lo_21", "person_key": "蕭_Y100*3", "surname": "蕭", "name": "蕭氏", "id_code": "Y100*3", "doors": ["225號 3F", "217號 1F", "2弄12號 2F"], "area": "A", "level": 2}, {"id": "lo_22", "person_key": "簡_A103*3", "surname": "簡", "name": "簡氏", "id_code": "A103*3", "doors": ["227號 3F"], "area": "A", "level": 2}, {"id": "lo_23", "person_key": "彭_A128*8", "surname": "彭", "name": "彭氏", "id_code": "A128*8", "doors": ["229號 3F"], "area": "A", "level": 2}, {"id": "lo_24", "person_key": "戴_F225*5", "surname": "戴", "name": "戴氏", "id_code": "F225*5", "doors": ["229號 3F"], "area": "A", "level": 2}, {"id": "lo_25", "person_key": "方_P200*6", "surname": "方", "name": "方氏", "id_code": "P200*6", "doors": ["231號 3F"], "area": "A", "level": 2}, {"id": "lo_26", "person_key": "陳_A122*1", "surname": "陳", "name": "陳氏", "id_code": "A122*1", "doors": ["233號 3F"], "area": "A", "level": 2}, {"id": "lo_27", "person_key": "陳_A102*1", "surname": "陳", "name": "陳氏", "id_code": "A102*1", "doors": ["235號 3F"], "area": "A", "level": 2}, {"id": "lo_28", "person_key": "周_A202*7", "surname": "周", "name": "周氏", "id_code": "A202*7", "doors": ["217號 2F"], "area": "A", "level": 2}, {"id": "lo_29", "person_key": "蔡_A201*1", "surname": "蔡", "name": "蔡氏", "id_code": "A201*1", "doors": ["219號 2F"], "area": "A", "level": 2}, {"id": "lo_30", "person_key": "詹_Y120*1", "surname": "詹", "name": "詹氏", "id_code": "Y120*1", "doors": ["221號 2F"], "area": "A", "level": 2}, {"id": "lo_31", "person_key": "林_Y120*9", "surname": "林", "name": "林先生", "id_code": "Y120*9", "doors": ["223號 2F"], "area": "A", "level": 2}, {"id": "lo_32", "person_key": "張_P220*8", "surname": "張", "name": "張小姐", "id_code": "P220*8", "doors": ["223號 2F", "233號 2F"], "area": "A", "level": 2}, {"id": "lo_33", "person_key": "柳_Y100*9", "surname": "柳", "name": "柳氏", "id_code": "Y100*9", "doors": ["225號 2F", "2弄12號 3F"], "area": "A", "level": 2}, {"id": "lo_34", "person_key": "吳_F220*2", "surname": "吳", "name": "吳氏", "id_code": "F220*2", "doors": ["227號 2F"], "area": "A", "level": 2}, {"id": "lo_35", "person_key": "江_A123*3", "surname": "江", "name": "江氏", "id_code": "A123*3", "doors": ["229號 2F"], "area": "A", "level": 2}, {"id": "lo_36", "person_key": "江_A123*4", "surname": "江", "name": "江氏", "id_code": "A123*4", "doors": ["229號 2F"], "area": "A", "level": 2}, {"id": "lo_37", "person_key": "陳_F222*3", "surname": "陳", "name": "陳氏", "id_code": "F222*3", "doors": ["231號 2F"], "area": "A", "level": 2}, {"id": "lo_38", "person_key": "藍_A124*3", "surname": "藍", "name": "藍氏", "id_code": "A124*3", "doors": ["235號 2F"], "area": "A", "level": 2}, {"id": "lo_39", "person_key": "黃_A203*3", "surname": "黃", "name": "黃氏", "id_code": "A203*3", "doors": ["219號 1F"], "area": "A", "level": 2}, {"id": "lo_40", "person_key": "周_F222*9", "surname": "周", "name": "周氏", "id_code": "F222*9", "doors": ["221號 1F"], "area": "A", "level": 2}, {"id": "lo_41", "person_key": "林_Y200*7", "surname": "林", "name": "林氏", "id_code": "Y200*7", "doors": ["223號 1F"], "area": "A", "level": 2}, {"id": "lo_42", "person_key": "黃_Q201*4", "surname": "黃", "name": "黃氏", "id_code": "Q201*4", "doors": ["225號 1F"], "area": "A", "level": 2}, {"id": "lo_43", "person_key": "周_A122*5", "surname": "周", "name": "周氏", "id_code": "A122*5", "doors": ["227號 1F"], "area": "A", "level": 2}, {"id": "lo_44", "person_key": "江_A104*8", "surname": "江", "name": "江氏", "id_code": "A104*8", "doors": ["229號 1F"], "area": "A", "level": 2}, {"id": "lo_45", "person_key": "江_A125*0", "surname": "江", "name": "江氏", "id_code": "A125*0", "doors": ["229號 1F"], "area": "A", "level": 2}, {"id": "lo_46", "person_key": "李_N202*3", "surname": "李", "name": "李氏", "id_code": "N202*3", "doors": ["231號 1F"], "area": "A", "level": 2}, {"id": "lo_47", "person_key": "高_N120*7", "surname": "高", "name": "高氏", "id_code": "N120*7", "doors": ["233號 1F"], "area": "A", "level": 2}, {"id": "lo_48", "person_key": "許_N103*7", "surname": "許", "name": "許氏", "id_code": "N103*7", "doors": ["235號 1F"], "area": "A", "level": 2}, {"id": "lo_49", "person_key": "謝_A110*4", "surname": "謝", "name": "謝先生", "id_code": "A110*4", "doors": ["2弄14號 4F"], "area": "B", "level": 2}, {"id": "lo_50", "person_key": "李_Y120*5", "surname": "李", "name": "李氏", "id_code": "Y120*5", "doors": ["2弄12號 4F"], "area": "B", "level": 2}, {"id": "lo_51", "person_key": "李_Y120*3", "surname": "李", "name": "李氏", "id_code": "Y120*3", "doors": ["2弄12號 4F"], "area": "B", "level": 2}, {"id": "lo_52", "person_key": "馮_F221*2", "surname": "馮", "name": "馮氏", "id_code": "F221*2", "doors": ["2弄10號 4F"], "area": "B", "level": 2}, {"id": "lo_53", "person_key": "陳_F226*4", "surname": "陳", "name": "陳氏", "id_code": "F226*4", "doors": ["2弄8號 4F"], "area": "B", "level": 2}, {"id": "lo_54", "person_key": "朱_A210*3", "surname": "朱", "name": "朱氏", "id_code": "A210*3", "doors": ["2弄6號 4F", "2弄4號 4F"], "area": "B", "level": 2}, {"id": "lo_55", "person_key": "呂_A102*3", "surname": "呂", "name": "呂氏", "id_code": "A102*3", "doors": ["2弄2號 4F"], "area": "B", "level": 2}, {"id": "lo_56", "person_key": "張_I200*2", "surname": "張", "name": "張氏", "id_code": "I200*2", "doors": ["2弄14號 3F"], "area": "B", "level": 2}, {"id": "lo_57", "person_key": "蘇_D121*3", "surname": "蘇", "name": "蘇先生", "id_code": "D121*3", "doors": ["2弄10號 3F"], "area": "B", "level": 2}, {"id": "lo_58", "person_key": "曹_F125*3", "surname": "曹", "name": "曹氏", "id_code": "F125*3", "doors": ["2弄8號 3F"], "area": "B", "level": 2}, {"id": "lo_59", "person_key": "張_A123*3", "surname": "張", "name": "張氏", "id_code": "A123*3", "doors": ["2弄6號 3F", "2弄4號 3F"], "area": "B", "level": 2}, {"id": "lo_60", "person_key": "王_Y220*5", "surname": "王", "name": "王氏", "id_code": "Y220*5", "doors": ["2弄2號 3F"], "area": "B", "level": 2}, {"id": "lo_61", "person_key": "蕭_Y120*4", "surname": "蕭", "name": "蕭氏", "id_code": "Y120*4", "doors": ["2弄14號 2F"], "area": "B", "level": 2}, {"id": "lo_62", "person_key": "蕭_Y220*8", "surname": "蕭", "name": "蕭氏", "id_code": "Y220*8", "doors": ["2弄14號 2F"], "area": "B", "level": 2}, {"id": "lo_63", "person_key": "蕭_Y220*7", "surname": "蕭", "name": "蕭氏", "id_code": "Y220*7", "doors": ["2弄14號 2F"], "area": "B", "level": 2}, {"id": "lo_64", "person_key": "王_Y220*3", "surname": "王", "name": "王氏", "id_code": "Y220*3", "doors": ["2弄14號 2F"], "area": "B", "level": 2}, {"id": "lo_65", "person_key": "林_Y120*4", "surname": "林", "name": "林奇民 (吉奇)", "id_code": "Y120*4", "doors": ["2弄10號 2F"], "area": "B", "level": 2}, {"id": "lo_66", "person_key": "鄭_A203*8", "surname": "鄭", "name": "鄭氏", "id_code": "A203*8", "doors": ["2弄8號 2F"], "area": "B", "level": 2}, {"id": "lo_67", "person_key": "巫_A129*6", "surname": "巫", "name": "巫氏", "id_code": "A129*6", "doors": ["2弄6號 2F"], "area": "B", "level": 2}, {"id": "lo_68", "person_key": "吳_K200*2", "surname": "吳", "name": "吳氏", "id_code": "K200*2", "doors": ["2弄4號 2F"], "area": "B", "level": 2}, {"id": "lo_69", "person_key": "吳_Y220*0", "surname": "吳", "name": "吳氏", "id_code": "Y220*0", "doors": ["2弄4號 2F"], "area": "B", "level": 2}, {"id": "lo_70", "person_key": "吳_Y220*9", "surname": "吳", "name": "吳氏", "id_code": "Y220*9", "doors": ["2弄4號 2F"], "area": "B", "level": 2}, {"id": "lo_71", "person_key": "吳_Y120*1", "surname": "吳", "name": "吳氏", "id_code": "Y120*1", "doors": ["2弄4號 2F"], "area": "B", "level": 2}, {"id": "lo_72", "person_key": "何_F121*9", "surname": "何", "name": "何氏", "id_code": "F121*9", "doors": ["2弄2號 2F"], "area": "B", "level": 2}, {"id": "lo_73", "person_key": "康_A123*5", "surname": "康", "name": "康氏", "id_code": "A123*5", "doors": ["2弄14號 1F"], "area": "B", "level": 2}, {"id": "lo_74", "person_key": "林_A129*6", "surname": "林", "name": "林韋安", "id_code": "A129*6", "doors": ["2弄10號 1F"], "area": "B", "level": 2}, {"id": "lo_75", "person_key": "呂_F123*4", "surname": "呂", "name": "呂氏", "id_code": "F123*4", "doors": ["2弄8號 1F"], "area": "B", "level": 2}, {"id": "lo_76", "person_key": "羅_B200*4", "surname": "羅", "name": "羅氏", "id_code": "B200*4", "doors": ["2弄6號 1F"], "area": "B", "level": 2}, {"id": "lo_77", "person_key": "邱_K101*7", "surname": "邱", "name": "邱氏", "id_code": "K101*7", "doors": ["2弄6號 1F"], "area": "B", "level": 2}, {"id": "lo_78", "person_key": "戴_L200*5", "surname": "戴", "name": "戴氏", "id_code": "L200*5", "doors": ["2弄4號 1F"], "area": "B", "level": 2}, {"id": "lo_79", "person_key": "林_Y200*6", "surname": "林", "name": "林氏", "id_code": "Y200*6", "doors": ["2弄2號 1F"], "area": "B", "level": 2}, {"id": "lo_80", "person_key": "${ownerName}_${displayId}", "surname": "${ownerName}", "name": "${ownerName}氏", "id_code": "${displayId}", "doors": ["${unitKey}"], "area": "B", "level": 2}, {"id": "lo_81", "person_key": "${currentVlOwner}_${currentVlDisplayId}", "surname": "${currentVlOwner}", "name": "${currentVlOwner}氏", "id_code": "${currentVlDisplayId}", "doors": ["${currentVlUnitKey}"], "area": "B", "level": 2}, {"id": "lo_82", "person_key": "${o.name}_${st.displayId}", "surname": "${o.name}", "name": "${o.name}氏", "id_code": "${st.displayId}", "doors": ["${unitKey}"], "area": "B", "level": 2}];
+    // 68 戶全部屋主名冊預建資料庫 (排除任何模板字串BUG)
+    const PREBUILT_LANDOWNERS = [{"id": "lo_1", "person_key": "蕭_A129*6", "surname": "蕭", "name": "蕭氏", "id_code": "A129*6", "doors": ["217號 4F"], "area": "A", "level": 2}, {"id": "lo_2", "person_key": "蕭_A222*9", "surname": "蕭", "name": "蕭氏", "id_code": "A222*9", "doors": ["217號 4F"], "area": "A", "level": 2}, {"id": "lo_3", "person_key": "蕭_A222*8", "surname": "蕭", "name": "蕭氏", "id_code": "A222*8", "doors": ["217號 4F"], "area": "A", "level": 2}, {"id": "lo_4", "person_key": "余_A128*8", "surname": "余", "name": "余先生", "id_code": "A128*8", "doors": ["219號 4F"], "area": "A", "level": 2}, {"id": "lo_5", "person_key": "余_A232*0", "surname": "余", "name": "余小姐", "id_code": "A232*0", "doors": ["219號 4F"], "area": "A", "level": 2}, {"id": "lo_6", "person_key": "余_A133*8", "surname": "余", "name": "余先生", "id_code": "A133*8", "doors": ["219號 4F"], "area": "A", "level": 2}, {"id": "lo_7", "person_key": "朱_P233*3", "surname": "朱", "name": "朱小姐", "id_code": "P233*3", "doors": ["219號 4F"], "area": "A", "level": 2}, {"id": "lo_8", "person_key": "何_F121*3", "surname": "何", "name": "何氏", "id_code": "F121*3", "doors": ["221號 4F"], "area": "A", "level": 2}, {"id": "lo_9", "person_key": "林_Y120*5", "surname": "林", "name": "林氏", "id_code": "Y120*5", "doors": ["223號 4F"], "area": "A", "level": 2}, {"id": "lo_10", "person_key": "柳_Y100*0", "surname": "柳", "name": "柳金福", "id_code": "Y100*0", "doors": ["225號 4F", "2弄12號 1F"], "area": "A", "level": 2}, {"id": "lo_11", "person_key": "簡_A122*1", "surname": "簡", "name": "簡氏", "id_code": "A122*1", "doors": ["227號 4F"], "area": "A", "level": 2}, {"id": "lo_12", "person_key": "江_A222*9", "surname": "江", "name": "江氏", "id_code": "A222*9", "doors": ["229號 4F"], "area": "A", "level": 2}, {"id": "lo_13", "person_key": "江_A129*6", "surname": "江", "name": "江氏", "id_code": "A129*6", "doors": ["231號 4F"], "area": "A", "level": 2}, {"id": "lo_14", "person_key": "江_A129*2", "surname": "江", "name": "江氏", "id_code": "A129*2", "doors": ["231號 4F"], "area": "A", "level": 2}, {"id": "lo_15", "person_key": "陳_R100*6", "surname": "陳", "name": "陳氏", "id_code": "R100*6", "doors": ["233號 4F"], "area": "A", "level": 2}, {"id": "lo_16", "person_key": "張_K221*3", "surname": "張", "name": "張氏", "id_code": "K221*3", "doors": ["235號 4F"], "area": "A", "level": 2}, {"id": "lo_17", "person_key": "林_G200*5", "surname": "林", "name": "林氏", "id_code": "G200*5", "doors": ["217號 3F"], "area": "A", "level": 2}, {"id": "lo_18", "person_key": "余_Y120*3", "surname": "余", "name": "余氏", "id_code": "Y120*3", "doors": ["219號 3F"], "area": "A", "level": 2}, {"id": "lo_19", "person_key": "林_Y120*3", "surname": "林", "name": "林氏", "id_code": "Y120*3", "doors": ["221號 3F"], "area": "A", "level": 2}, {"id": "lo_20", "person_key": "林_Y220*9", "surname": "林", "name": "林氏", "id_code": "Y220*9", "doors": ["223號 3F"], "area": "A", "level": 2}, {"id": "lo_21", "person_key": "蕭_Y100*3", "surname": "蕭", "name": "蕭氏", "id_code": "Y100*3", "doors": ["225號 3F", "217號 1F", "2弄12號 2F"], "area": "A", "level": 2}, {"id": "lo_22", "person_key": "簡_A103*3", "surname": "簡", "name": "簡氏", "id_code": "A103*3", "doors": ["227號 3F"], "area": "A", "level": 2}, {"id": "lo_23", "person_key": "彭_A128*8", "surname": "彭", "name": "彭氏", "id_code": "A128*8", "doors": ["229號 3F"], "area": "A", "level": 2}, {"id": "lo_24", "person_key": "戴_F225*5", "surname": "戴", "name": "戴氏", "id_code": "F225*5", "doors": ["229號 3F"], "area": "A", "level": 2}, {"id": "lo_25", "person_key": "方_P200*6", "surname": "方", "name": "方氏", "id_code": "P200*6", "doors": ["231號 3F"], "area": "A", "level": 2}, {"id": "lo_26", "person_key": "陳_A122*1", "surname": "陳", "name": "陳氏", "id_code": "A122*1", "doors": ["233號 3F"], "area": "A", "level": 2}, {"id": "lo_27", "person_key": "陳_A102*1", "surname": "陳", "name": "陳氏", "id_code": "A102*1", "doors": ["235號 3F"], "area": "A", "level": 2}, {"id": "lo_28", "person_key": "周_A202*7", "surname": "周", "name": "周氏", "id_code": "A202*7", "doors": ["217號 2F"], "area": "A", "level": 2}, {"id": "lo_29", "person_key": "蔡_A201*1", "surname": "蔡", "name": "蔡氏", "id_code": "A201*1", "doors": ["219號 2F"], "area": "A", "level": 2}, {"id": "lo_30", "person_key": "詹_Y120*1", "surname": "詹", "name": "詹氏", "id_code": "Y120*1", "doors": ["221號 2F"], "area": "A", "level": 2}, {"id": "lo_31", "person_key": "林_Y120*9", "surname": "林", "name": "林先生", "id_code": "Y120*9", "doors": ["223號 2F"], "area": "A", "level": 2}, {"id": "lo_32", "person_key": "張_P220*8", "surname": "張", "name": "張小姐", "id_code": "P220*8", "doors": ["223號 2F", "233號 2F"], "area": "A", "level": 2}, {"id": "lo_33", "person_key": "柳_Y100*9", "surname": "柳", "name": "柳氏", "id_code": "Y100*9", "doors": ["225號 2F", "2弄12號 3F"], "area": "A", "level": 2}, {"id": "lo_34", "person_key": "吳_F220*2", "surname": "吳", "name": "吳氏", "id_code": "F220*2", "doors": ["227號 2F"], "area": "A", "level": 2}, {"id": "lo_35", "person_key": "江_A123*3", "surname": "江", "name": "江氏", "id_code": "A123*3", "doors": ["229號 2F"], "area": "A", "level": 2}, {"id": "lo_36", "person_key": "江_A123*4", "surname": "江", "name": "江氏", "id_code": "A123*4", "doors": ["229號 2F"], "area": "A", "level": 2}, {"id": "lo_37", "person_key": "陳_F222*3", "surname": "陳", "name": "陳氏", "id_code": "F222*3", "doors": ["231號 2F"], "area": "A", "level": 2}, {"id": "lo_38", "person_key": "藍_A124*3", "surname": "藍", "name": "藍氏", "id_code": "A124*3", "doors": ["235號 2F"], "area": "A", "level": 2}, {"id": "lo_39", "person_key": "黃_A203*3", "surname": "黃", "name": "黃氏", "id_code": "A203*3", "doors": ["219號 1F"], "area": "A", "level": 2}, {"id": "lo_40", "person_key": "周_F222*9", "surname": "周", "name": "周氏", "id_code": "F222*9", "doors": ["221號 1F"], "area": "A", "level": 2}, {"id": "lo_41", "person_key": "林_Y200*7", "surname": "林", "name": "林氏", "id_code": "Y200*7", "doors": ["223號 1F"], "area": "A", "level": 2}, {"id": "lo_42", "person_key": "黃_Q201*4", "surname": "黃", "name": "黃氏", "id_code": "Q201*4", "doors": ["225號 1F"], "area": "A", "level": 2}, {"id": "lo_43", "person_key": "周_A122*5", "surname": "周", "name": "周氏", "id_code": "A122*5", "doors": ["227號 1F"], "area": "A", "level": 2}, {"id": "lo_44", "person_key": "江_A104*8", "surname": "江", "name": "江氏", "id_code": "A104*8", "doors": ["229號 1F"], "area": "A", "level": 2}, {"id": "lo_45", "person_key": "江_A125*0", "surname": "江", "name": "江氏", "id_code": "A125*0", "doors": ["229號 1F"], "area": "A", "level": 2}, {"id": "lo_46", "person_key": "李_N202*3", "surname": "李", "name": "李氏", "id_code": "N202*3", "doors": ["231號 1F"], "area": "A", "level": 2}, {"id": "lo_47", "person_key": "高_N120*7", "surname": "高", "name": "高氏", "id_code": "N120*7", "doors": ["233號 1F"], "area": "A", "level": 2}, {"id": "lo_48", "person_key": "許_N103*7", "surname": "許", "name": "許氏", "id_code": "N103*7", "doors": ["235號 1F"], "area": "A", "level": 2}, {"id": "lo_49", "person_key": "謝_A110*4", "surname": "謝", "name": "謝先生", "id_code": "A110*4", "doors": ["2弄14號 4F"], "area": "B", "level": 2}, {"id": "lo_50", "person_key": "李_Y120*5", "surname": "李", "name": "李氏", "id_code": "Y120*5", "doors": ["2弄12號 4F"], "area": "B", "level": 2}, {"id": "lo_51", "person_key": "李_Y120*3", "surname": "李", "name": "李氏", "id_code": "Y120*3", "doors": ["2弄12號 4F"], "area": "B", "level": 2}, {"id": "lo_52", "person_key": "馮_F221*2", "surname": "馮", "name": "馮氏", "id_code": "F221*2", "doors": ["2弄10號 4F"], "area": "B", "level": 2}, {"id": "lo_53", "person_key": "陳_F226*4", "surname": "陳", "name": "陳氏", "id_code": "F226*4", "doors": ["2弄8號 4F"], "area": "B", "level": 2}, {"id": "lo_54", "person_key": "朱_A210*3", "surname": "朱", "name": "朱氏", "id_code": "A210*3", "doors": ["2弄6號 4F", "2弄4號 4F"], "area": "B", "level": 2}, {"id": "lo_55", "person_key": "呂_A102*3", "surname": "呂", "name": "呂氏", "id_code": "A102*3", "doors": ["2弄2號 4F"], "area": "B", "level": 2}, {"id": "lo_56", "person_key": "張_I200*2", "surname": "張", "name": "張氏", "id_code": "I200*2", "doors": ["2弄14號 3F"], "area": "B", "level": 2}, {"id": "lo_57", "person_key": "蘇_D121*3", "surname": "蘇", "name": "蘇先生", "id_code": "D121*3", "doors": ["2弄10號 3F"], "area": "B", "level": 2}, {"id": "lo_58", "person_key": "曹_F125*3", "surname": "曹", "name": "曹氏", "id_code": "F125*3", "doors": ["2弄8號 3F"], "area": "B", "level": 2}, {"id": "lo_59", "person_key": "張_A123*3", "surname": "張", "name": "張氏", "id_code": "A123*3", "doors": ["2弄6號 3F", "2弄4號 3F"], "area": "B", "level": 2}, {"id": "lo_60", "person_key": "王_Y220*5", "surname": "王", "name": "王氏", "id_code": "Y220*5", "doors": ["2弄2號 3F"], "area": "B", "level": 2}, {"id": "lo_61", "person_key": "蕭_Y120*4", "surname": "蕭", "name": "蕭氏", "id_code": "Y120*4", "doors": ["2弄14號 2F"], "area": "B", "level": 2}, {"id": "lo_62", "person_key": "蕭_Y220*8", "surname": "蕭", "name": "蕭氏", "id_code": "Y220*8", "doors": ["2弄14號 2F"], "area": "B", "level": 2}, {"id": "lo_63", "person_key": "蕭_Y220*7", "surname": "蕭", "name": "蕭氏", "id_code": "Y220*7", "doors": ["2弄14號 2F"], "area": "B", "level": 2}, {"id": "lo_64", "person_key": "王_Y220*3", "surname": "王", "name": "王氏", "id_code": "Y220*3", "doors": ["2弄14號 2F"], "area": "B", "level": 2}, {"id": "lo_65", "person_key": "林_Y120*4", "surname": "林", "name": "林奇民 (吉奇)", "id_code": "Y120*4", "doors": ["2弄10號 2F"], "area": "B", "level": 2}, {"id": "lo_66", "person_key": "鄭_A203*8", "surname": "鄭", "name": "鄭氏", "id_code": "A203*8", "doors": ["2弄8號 2F"], "area": "B", "level": 2}, {"id": "lo_67", "person_key": "巫_A129*6", "surname": "巫", "name": "巫氏", "id_code": "A129*6", "doors": ["2弄6號 2F"], "area": "B", "level": 2}, {"id": "lo_68", "person_key": "吳_K200*2", "surname": "吳", "name": "吳氏", "id_code": "K200*2", "doors": ["2弄4號 2F"], "area": "B", "level": 2}, {"id": "lo_69", "person_key": "吳_Y220*0", "surname": "吳", "name": "吳氏", "id_code": "Y220*0", "doors": ["2弄4號 2F"], "area": "B", "level": 2}, {"id": "lo_70", "person_key": "吳_Y220*9", "surname": "吳", "name": "吳氏", "id_code": "Y220*9", "doors": ["2弄4號 2F"], "area": "B", "level": 2}, {"id": "lo_71", "person_key": "吳_Y120*1", "surname": "吳", "name": "吳氏", "id_code": "Y120*1", "doors": ["2弄4號 2F"], "area": "B", "level": 2}, {"id": "lo_72", "person_key": "何_F121*9", "surname": "何", "name": "何氏", "id_code": "F121*9", "doors": ["2弄2號 2F"], "area": "B", "level": 2}, {"id": "lo_73", "person_key": "康_A123*5", "surname": "康", "name": "康氏", "id_code": "A123*5", "doors": ["2弄14號 1F"], "area": "B", "level": 2}, {"id": "lo_74", "person_key": "林_A129*6", "surname": "林", "name": "林韋安", "id_code": "A129*6", "doors": ["2弄10號 1F"], "area": "B", "level": 2}, {"id": "lo_75", "person_key": "呂_F123*4", "surname": "呂", "name": "呂氏", "id_code": "F123*4", "doors": ["2弄8號 1F"], "area": "B", "level": 2}, {"id": "lo_76", "person_key": "羅_B200*4", "surname": "羅", "name": "羅氏", "id_code": "B200*4", "doors": ["2弄6號 1F"], "area": "B", "level": 2}, {"id": "lo_77", "person_key": "邱_K101*7", "surname": "邱", "name": "邱氏", "id_code": "K101*7", "doors": ["2弄6號 1F"], "area": "B", "level": 2}, {"id": "lo_78", "person_key": "戴_L200*5", "surname": "戴", "name": "戴氏", "id_code": "L200*5", "doors": ["2弄4號 1F"], "area": "B", "level": 2}, {"id": "lo_79", "person_key": "林_Y200*6", "surname": "林", "name": "林氏", "id_code": "Y200*6", "doors": ["2弄2號 1F"], "area": "B", "level": 2}];
 
     // 本機狀態儲存
-    const STORAGE_KEY = 'mingde_genealogy_with_picker_v6';
+    const STORAGE_KEY = 'mingde_genealogy_editable_v7';
     let appData = loadAppData();
     let network = null;
     let selectedPersonId = null;
@@ -382,7 +420,6 @@
           console.warn('載入族譜儲存失敗：', e);
         }
       }
-      // 初始畫布為空，由使用者挑選後放置
       return { persons: [], relations: [] };
     }
 
@@ -411,7 +448,6 @@
       }
     }
 
-    // 切換左側 68 戶選取抽屜
     function togglePickerPanel() {
       const drawer = document.getElementById('landownerPickerDrawer');
       isPickerOpen = !isPickerOpen;
@@ -441,7 +477,7 @@
       renderLandownerPickerList();
     }
 
-    // 渲染左側候選屋主名冊
+    // 渲染左側候選屋主名冊 (已完整過濾掉代碼占位字串)
     function renderLandownerPickerList() {
       const container = document.getElementById('pickerListContainer');
       const search = (document.getElementById('pickerSearchInput').value || '').trim().toLowerCase();
@@ -450,6 +486,7 @@
       const placedIds = new Set(appData.persons.map(p => p.person_key || p.id));
 
       const filtered = PREBUILT_LANDOWNERS.filter(o => {
+        if (!o.name || o.name.includes('$') || o.doors.some(d => d.includes('$'))) return false;
         if (pickerAreaFilter !== 'ALL' && o.area !== pickerAreaFilter) return false;
         if (search) {
           const str = (o.name + ' ' + (o.id_code || '') + ' ' + o.doors.join(' ')).toLowerCase();
@@ -464,7 +501,7 @@
       }
 
       filtered.forEach(o => {
-        const isPlaced = placedIds.has(o.person_key) || appData.persons.some(p => p.name === o.name && p.idCode === o.id_code);
+        const isPlaced = placedIds.has(o.person_key) || appData.persons.some(p => p.person_key === o.person_key);
 
         const card = document.createElement('div');
         card.className = 'p-2.5 rounded-xl border transition shadow-sm flex flex-col justify-between gap-1.5 ' +
@@ -503,8 +540,8 @@
         person_key: lo.person_key,
         name: lo.name,
         surname: lo.surname,
-        idCode: lo.id_code,
-        doors: lo.doors,
+        idCode: lo.id_code || '',
+        doors: lo.doors || [],
         level: lo.level || 2,
         gender: 'male',
         notes: '原登記為 ' + lo.doors.join('、') + ' 之所有權人。'
@@ -521,6 +558,7 @@
     function addAllFilteredToCanvas() {
       const search = (document.getElementById('pickerSearchInput').value || '').trim().toLowerCase();
       const filtered = PREBUILT_LANDOWNERS.filter(o => {
+        if (!o.name || o.name.includes('$') || o.doors.some(d => d.includes('$'))) return false;
         if (pickerAreaFilter !== 'ALL' && o.area !== pickerAreaFilter) return false;
         if (search) {
           const str = (o.name + ' ' + (o.id_code || '') + ' ' + o.doors.join(' ')).toLowerCase();
@@ -537,8 +575,8 @@
             person_key: lo.person_key,
             name: lo.name,
             surname: lo.surname,
-            idCode: lo.id_code,
-            doors: lo.doors,
+            idCode: lo.id_code || '',
+            doors: lo.doors || [],
             level: lo.level || 2,
             gender: 'male',
             notes: '原登記為 ' + lo.doors.join('、') + ' 之所有權人。'
@@ -567,20 +605,20 @@
     }
 
     // 將人物格式化為 Vis.js 階層卡片：
-    // 嚴格依使用者指定：先顯示「姓名」，下一行「身分證」，下一行「門牌號碼」，塔圖風格單元格
+    // 嚴格依使用者指定：純文字分行（第一行姓名、下一行身分證、下一行門牌），絕不帶任何未支援的 <font> 標籤！
     function formatPersonToVisNode(person) {
-      let labelText = '<b>' + person.name + '</b>';
+      // 1. 姓名 (第一行)
+      let labelText = (person.name && person.name.trim()) ? person.name.trim() : '未命名';
 
-      if (person.idCode && person.idCode.trim()) {
-        labelText += '\n<font size="2" color="#94a3b8">' + person.idCode.trim() + '</font>';
-      } else {
-        labelText += '\n<font size="2" color="#64748b">--</font>';
-      }
+      // 2. 身分證字號 (第二行)
+      const idCodeStr = (person.idCode && person.idCode.trim()) ? person.idCode.trim() : '--';
+      labelText += '\n' + idCodeStr;
 
+      // 3. 門牌號碼 (第三行起)
       if (person.doors && person.doors.length > 0) {
         person.doors.forEach(d => {
           if (d && d.trim()) {
-            labelText += '\n<font size="2" color="#38bdf8">🏠 ' + d.trim() + '</font>';
+            labelText += '\n🏠 ' + d.trim();
           }
         });
       }
@@ -617,10 +655,10 @@
         borderWidth: borderWidth,
         shadow: { enabled: true, color: 'rgba(0,0,0,0.6)', size: 8, x: 2, y: 4 },
         font: {
-          multi: 'html',
           color: '#ffffff',
-          size: 15,
-          face: 'Inter, Noto Sans TC, sans-serif'
+          size: 14,
+          face: 'Inter, Noto Sans TC, sans-serif',
+          align: 'center'
         }
       };
     }
@@ -710,6 +748,7 @@
 
       network = new vis.Network(container, { nodes: visNodes, edges: visEdges }, options);
 
+      // 單擊節點：開啟右側可編輯抽屜
       network.on('click', function(params) {
         if (params.nodes.length > 0) {
           const personId = params.nodes[0];
@@ -718,9 +757,23 @@
           closePersonDrawer();
         }
       });
+
+      // 雙擊節點：直接聚焦姓名輸入框進行快速改名
+      network.on('doubleClick', function(params) {
+        if (params.nodes.length > 0) {
+          const personId = params.nodes[0];
+          openPersonDrawer(personId);
+          setTimeout(() => {
+            const input = document.getElementById('drawerInputName');
+            if (input) {
+              input.focus();
+              input.select();
+            }
+          }, 150);
+        }
+      });
     }
 
-    // 視野縮放
     function zoomTree(delta) {
       if (!network) return;
       const scale = network.getScale();
@@ -732,7 +785,6 @@
       network.fit({ animation: { duration: 400, easingFunction: 'easeInOutQuad' } });
     }
 
-    // 檢視模式切換：族譜樹狀圖 vs 世代卡片清單
     function switchMainView(view) {
       const treeSec = document.getElementById('treeViewContainer');
       const listSec = document.getElementById('listViewContainer');
@@ -754,7 +806,6 @@
       }
     }
 
-    // 世代卡片列表渲染（塔圖卡片概念）
     function renderGenerationalListView() {
       const wrapper = document.getElementById('generationalCardsWrapper');
       wrapper.innerHTML = '';
@@ -799,7 +850,10 @@
 
           cardsHtml += 
             '<div onclick="openPersonDrawer(\'' + p.id + '\')" class="p-4 rounded-xl bg-slate-950 border border-slate-800 hover:border-blue-500/80 cursor-pointer transition shadow-sm space-y-1.5">' +
-              '<div class="text-base font-black text-white">' + p.name + '</div>' +
+              '<div class="text-base font-black text-white flex items-center justify-between">' +
+                '<span>' + p.name + '</span>' +
+                '<span class="text-[10px] text-indigo-400 font-normal">點擊編輯 ✏️</span>' +
+              '</div>' +
               '<div class="text-xs font-mono text-slate-400">' + (p.idCode || '--') + '</div>' +
               '<div class="pt-1 space-y-1">' + doorsPills + '</div>' +
             '</div>';
@@ -818,33 +872,19 @@
       });
     }
 
-    // 打開人物抽屜
+    // 打開右側人物抽屜：直接提供姓名、身分證字號、門牌號之即時編輯輸入框
     function openPersonDrawer(personId) {
       selectedPersonId = personId;
       const p = appData.persons.find(x => x.id === personId);
       if (!p) return;
 
-      document.getElementById('drawerPersonName').textContent = p.name;
-      document.getElementById('drawerName').textContent = p.name;
-      document.getElementById('drawerGeneration').textContent = 
-        p.level === 0 ? '第 0 代（祖先長輩）' :
-        p.level === 1 ? '第 1 代（曾祖長輩）' :
-        p.level === 2 ? '第 2 代（祖輩/第二代）' :
-        p.level === 3 ? '第 3 代（父輩/第三代）' : '第 4 代（曾孫現任）';
-      document.getElementById('drawerIdCode').textContent = p.idCode || '（未登記）';
-
-      // 門牌
-      const doorsContainer = document.getElementById('drawerDoorsList');
-      if (p.doors && p.doors.length > 0) {
-        doorsContainer.innerHTML = p.doors.map(d => 
-          '<div class="flex items-center gap-2 p-1.5 rounded bg-slate-900 border border-slate-800">' +
-            '<span class="text-sky-400 font-bold">🏠</span>' +
-            '<span class="font-medium text-white">' + d + '</span>' +
-          '</div>'
-        ).join('');
-      } else {
-        doorsContainer.innerHTML = '<span class="text-slate-500">（無登記門牌）</span>';
-      }
+      document.getElementById('drawerPersonTitle').textContent = '編輯：' + p.name;
+      document.getElementById('drawerInputName').value = p.name || '';
+      document.getElementById('drawerInputIdCode').value = p.idCode || '';
+      document.getElementById('drawerInputLevel').value = p.level !== undefined ? p.level : 2;
+      document.getElementById('drawerInputGender').value = p.gender || 'male';
+      document.getElementById('drawerInputDoors').value = (p.doors || []).join('\n');
+      document.getElementById('drawerInputNotes').value = p.notes || '';
 
       // 關聯清單
       const relContainer = document.getElementById('drawerRelationsList');
@@ -855,18 +895,47 @@
           const otherPerson = appData.persons.find(x => x.id === otherId);
           const otherName = otherPerson ? otherPerson.name : otherId;
           const label = r.label || (r.type === 'parent_child' ? (r.from === personId ? '子女' : '父母') : '配偶/親屬');
-          return 
+          return (
             '<div class="flex items-center justify-between p-1.5 rounded bg-slate-900 border border-slate-800">' +
               '<span class="text-indigo-300 font-medium">' + label + ' ➔ ' + otherName + '</span>' +
               '<button type="button" onclick="deleteRelation(\'' + r.id + '\')" class="text-rose-400 hover:text-rose-300 text-[10px]" title="解除此關係">✕ 刪除</button>' +
-            '</div>';
+            '</div>'
+          );
         }).join('');
       } else {
         relContainer.innerHTML = '<span class="text-slate-500">（尚未建立任何親屬關係）</span>';
       }
 
-      document.getElementById('drawerNotes').textContent = p.notes || '無特殊備註記錄。';
       document.getElementById('personDetailDrawer').classList.remove('hidden');
+    }
+
+    // 即時儲存抽屜內的編輯修改 (姓名、身分證、門牌、層次)
+    function saveDrawerInlineEdits() {
+      if (!selectedPersonId) return;
+      const p = appData.persons.find(x => x.id === selectedPersonId);
+      if (!p) return;
+
+      const newName = document.getElementById('drawerInputName').value.trim();
+      const newIdCode = document.getElementById('drawerInputIdCode').value.trim();
+      const newLevel = Number(document.getElementById('drawerInputLevel').value);
+      const newGender = document.getElementById('drawerInputGender').value;
+      const rawDoors = document.getElementById('drawerInputDoors').value;
+      const newNotes = document.getElementById('drawerInputNotes').value.trim();
+
+      p.name = newName || '未命名';
+      p.idCode = newIdCode;
+      p.level = newLevel;
+      p.gender = newGender;
+      p.notes = newNotes;
+
+      p.doors = rawDoors
+        .split(/[\n,，]+/)
+        .map(d => d.trim())
+        .filter(d => d.length > 0);
+
+      saveAppData();
+      renderVisNetwork();
+      renderGenerationalListView();
     }
 
     function closePersonDrawer() {
@@ -874,7 +943,13 @@
       selectedPersonId = null;
     }
 
-    // 新增/編輯人物 Modal
+    function openAddRelationModalWithCurrent() {
+      openAddRelationModal();
+      if (selectedPersonId) {
+        document.getElementById('relFromPerson').value = selectedPersonId;
+      }
+    }
+
     function openAddPersonModal(editId = null) {
       document.getElementById('personForm').reset();
       document.getElementById('editPersonId').value = editId || '';
@@ -950,10 +1025,6 @@
       if (savedPersonId) openPersonDrawer(savedPersonId);
     }
 
-    function editCurrentSelectedPerson() {
-      if (selectedPersonId) openAddPersonModal(selectedPersonId);
-    }
-
     function deleteCurrentSelectedPerson() {
       if (!selectedPersonId) return;
       const p = appData.persons.find(x => x.id === selectedPersonId);
@@ -970,7 +1041,6 @@
       renderLandownerPickerList();
     }
 
-    // 建立關係 Modal
     function openAddRelationModal() {
       const fromSel = document.getElementById('relFromPerson');
       const toSel = document.getElementById('relToPerson');
@@ -1048,7 +1118,6 @@
       if (selectedPersonId) openPersonDrawer(selectedPersonId);
     }
 
-    // 完全清空畫布
     function clearAllDataConfirm() {
       if (!confirm('確定要「清空畫布」嗎？\n畫面上的人物將全部清空，隨時可再從名冊庫重新挑選加入。')) return;
       appData = { persons: [], relations: [] };
@@ -1059,7 +1128,6 @@
       renderLandownerPickerList();
     }
 
-    // 啟動初始化
     window.addEventListener('DOMContentLoaded', () => {
       renderVisNetwork();
       renderLandownerPickerList();
