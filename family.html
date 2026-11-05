@@ -51,16 +51,17 @@
           <span>傳統階層家族譜系表</span>
           <span class="text-xs px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 font-bold border border-amber-500/30">北投明德案</span>
         </h1>
-        <p class="text-[11px] text-slate-400 hidden sm:block">代際層級由上至下（父母長輩 ➔ 子女後代）• 依序顯示姓名、身分證與持有門牌</p>
+        <p class="text-[11px] text-slate-400 hidden sm:block">代際層級由上至下（父母長輩 ➔ 子女後代）• 依序顯示姓名、身分證字號與門牌樓層</p>
       </div>
     </div>
 
     <!-- 頂部功能操作按鈕群 -->
     <div class="flex items-center gap-2">
-      <button type="button" onclick="openAddPersonModal()" class="px-3.5 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-black text-xs shadow-md flex items-center gap-1.5 transition active:scale-95">
-        <span>➕</span> 新增人物
+      <!-- 核心醒目按鈕：新增人物 -->
+      <button type="button" onclick="openAddPersonModal()" class="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-black text-xs shadow-lg shadow-indigo-600/30 flex items-center gap-1.5 transition active:scale-95 border border-indigo-400/40">
+        <span class="text-sm font-bold">➕</span> 新增人物
       </button>
-      <button type="button" onclick="openAddRelationModal()" class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold border border-slate-700 flex items-center gap-1.5 transition active:scale-95">
+      <button type="button" onclick="openAddRelationModal()" class="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold border border-slate-700 flex items-center gap-1.5 transition active:scale-95">
         <span>🔗</span> 建立關係
       </button>
 
@@ -76,24 +77,8 @@
         </button>
       </div>
 
-            <!-- 家族快速聚焦按鈕 -->
-      <div class="hidden md:inline-flex rounded-xl bg-slate-800 p-0.5 border border-slate-700 text-xs font-bold">
-        <button type="button" onclick="filterClan('ALL')" id="btnClanAll" class="px-2.5 py-1.5 rounded-lg bg-indigo-600 text-white shadow-xs transition">
-          全部 (12位)
-        </button>
-        <button type="button" onclick="filterClan('林')" id="btnClanLin" class="px-2.5 py-1.5 rounded-lg text-slate-400 hover:text-white transition">
-          林氏 (10號棟)
-        </button>
-        <button type="button" onclick="filterClan('柳')" id="btnClanLiu" class="px-2.5 py-1.5 rounded-lg text-slate-400 hover:text-white transition">
-          柳氏 (12號棟)
-        </button>
-      </div>
-
-      <button type="button" onclick="resetToInitialLiuClan()" class="px-2.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-amber-300 text-xs font-bold border border-slate-700 transition" title="重設為預設家族名冊（林氏＋柳氏）">
-        🔄 重置範本
-      </button>
-      <button type="button" onclick="clearAllDataConfirm()" class="px-2.5 py-1.5 rounded-xl bg-rose-950/60 hover:bg-rose-900 text-rose-300 text-xs font-bold border border-rose-800/60 transition" title="完全清空畫布，從零開始輸入">
-        🧹 完全清空
+      <button type="button" onclick="clearAllDataConfirm()" class="px-2.5 py-1.5 rounded-xl bg-rose-950/60 hover:bg-rose-900 text-rose-300 text-xs font-bold border border-rose-800/60 transition" title="清空所有人物與關係">
+        🧹 清空重來
       </button>
     </div>
   </header>
@@ -105,21 +90,39 @@
     <div id="treeViewContainer" class="flex-1 w-full h-full relative">
       <div id="networkContainer"></div>
 
+      <!-- 空白畫布導引用戶新增 -->
+      <div id="emptyStateBox" class="hidden absolute inset-0 flex flex-col items-center justify-center p-6 text-center pointer-events-none">
+        <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-8 max-w-md shadow-2xl backdrop-blur-md pointer-events-auto space-y-4">
+          <div class="w-16 h-16 rounded-2xl bg-indigo-600/20 text-indigo-400 flex items-center justify-center text-3xl mx-auto border border-indigo-500/30">
+            🌳
+          </div>
+          <div>
+            <h3 class="text-base font-black text-white">目前族譜為完全空白狀態</h3>
+            <p class="text-xs text-slate-400 mt-1 leading-relaxed">
+              所有預設人物與關係皆已清空。<br>請點擊下方按鈕，開始輸入人物（姓、名、身分證字號、門牌樓層）。
+            </p>
+          </div>
+          <button type="button" onclick="openAddPersonModal()" class="w-full py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-black text-xs shadow-lg transition active:scale-95 flex items-center justify-center gap-2">
+            <span>➕</span> 立即新增第一位人物
+          </button>
+        </div>
+      </div>
+
       <!-- 畫面左下角：卡片格式說明圖例 -->
       <div class="absolute bottom-4 left-4 bg-slate-900/90 border border-slate-800 rounded-2xl p-3.5 text-xs backdrop-blur-md shadow-2xl space-y-2 pointer-events-auto max-w-xs">
         <div class="font-bold text-white flex items-center justify-between border-b border-slate-800 pb-1.5">
-          <span>📇 人物卡片格式說明</span>
+          <span>📇 人物卡片顯示格式</span>
           <span class="text-[10px] text-slate-400 font-normal">一層一層排輩份</span>
         </div>
         <div class="bg-slate-950 p-2.5 rounded-xl border border-slate-800 text-left space-y-1">
-          <div class="text-sm font-black text-amber-400">1. 人物姓名 (主標題)</div>
+          <div class="text-sm font-black text-amber-400">1. 人物姓名 (姓 + 名)</div>
           <div class="text-[11px] font-mono text-slate-400">2. 身分證字號 (如果有)</div>
-          <div class="text-[11px] text-sky-400 font-semibold">3. 🏠 門牌號碼 (若有多戶逐一條列)</div>
+          <div class="text-[11px] text-sky-400 font-semibold">3. 🏠 門牌與樓層 (多戶條列)</div>
         </div>
         <div class="flex items-center gap-3 pt-1 text-[11px] text-slate-400">
-          <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded bg-amber-500"></span> 第一代(父母)</span>
-          <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded bg-blue-500"></span> 第二代(子女)</span>
-          <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded bg-emerald-500"></span> 第三代(孫輩)</span>
+          <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded bg-amber-500"></span> 父母長輩</span>
+          <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded bg-blue-500"></span> 子女晚輩</span>
+          <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded bg-cyan-500"></span> 孫輩/現任</span>
         </div>
       </div>
 
@@ -150,7 +153,7 @@
             ✏️ 編輯
           </button>
           <button type="button" onclick="deleteCurrentSelectedPerson()" class="p-1.5 rounded-lg text-rose-400 hover:bg-slate-800 transition text-xs font-bold" title="刪除此人物">
-            🗑️
+            🗑️ 刪除
           </button>
           <button type="button" onclick="closePersonDrawer()" class="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition">
             ✕
@@ -161,18 +164,19 @@
       <div class="p-4 space-y-4 flex-1 overflow-y-auto custom-scrollbar text-xs">
         <!-- 基本資訊卡 -->
         <div class="bg-slate-950 p-3.5 rounded-xl border border-slate-800 space-y-2">
-          <div class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">階層身分資訊</div>
+          <div class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">身分與世代資訊</div>
           <div class="space-y-1.5">
             <div><span class="text-slate-500">姓名：</span> <span id="drawerName" class="text-white font-bold text-sm"></span></div>
-            <div><span class="text-slate-500">輩份世代：</span> <span id="drawerGeneration" class="text-amber-400 font-bold"></span></div>
+            <div><span class="text-slate-500">姓氏：</span> <span id="drawerSurname" class="text-amber-300 font-bold"></span></div>
+            <div><span class="text-slate-500">名字：</span> <span id="drawerGivenName" class="text-slate-200 font-bold"></span></div>
+            <div><span class="text-slate-500">世代階層：</span> <span id="drawerGeneration" class="text-amber-400 font-bold"></span></div>
             <div><span class="text-slate-500">身分證字號：</span> <span id="drawerIdCode" class="text-slate-300 font-mono"></span></div>
-            <div><span class="text-slate-500">稱謂/角色：</span> <span id="drawerRole" class="text-slate-300"></span></div>
           </div>
         </div>
 
-        <!-- 持有門牌清冊 -->
+        <!-- 持有門牌與樓層清冊 -->
         <div class="bg-slate-950 p-3.5 rounded-xl border border-slate-800 space-y-2">
-          <div class="text-[10px] font-bold text-sky-400 uppercase tracking-wider">名下/持有房屋門牌 (若有多於一戶皆列出)</div>
+          <div class="text-[10px] font-bold text-sky-400 uppercase tracking-wider">持有門牌與樓層 (若多於一個皆列出)</div>
           <div id="drawerDoorsList" class="space-y-1.5 text-slate-200">
             <!-- Rendered via JS -->
           </div>
@@ -180,13 +184,13 @@
 
         <!-- 親屬網絡關聯 -->
         <div class="bg-slate-950 p-3.5 rounded-xl border border-slate-800 space-y-2">
-          <div class="text-[10px] font-bold text-indigo-400 uppercase tracking-wider">族譜直系與婚姻關聯</div>
+          <div class="text-[10px] font-bold text-indigo-400 uppercase tracking-wider">親屬與婚姻連線</div>
           <div id="drawerRelationsList" class="space-y-1 text-slate-300">
             <!-- Rendered via JS -->
           </div>
         </div>
 
-        <!-- 筆記與線索分析 -->
+        <!-- 筆記與情資備註 -->
         <div class="bg-slate-950 p-3.5 rounded-xl border border-slate-800 space-y-1.5">
           <div class="text-[10px] font-bold text-amber-400 uppercase tracking-wider">背景情資與傳聞備註</div>
           <div id="drawerNotes" class="text-slate-300 leading-relaxed whitespace-pre-wrap">--</div>
@@ -196,62 +200,104 @@
 
   </div>
 
-  <!-- MODAL: 新增/編輯人物對話框 -->
+  <!-- MODAL: 新增/編輯人物對話框 (輸入姓、名、身分證字號、樓層、門牌) -->
   <div id="personModal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
-    <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full shadow-2xl overflow-hidden flex flex-col">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-lg w-full shadow-2xl overflow-hidden flex flex-col animate-in fade-in zoom-in-95">
       <div class="px-5 py-4 border-b border-slate-800 flex items-center justify-between bg-slate-850">
-        <h3 class="text-sm font-black text-white" id="personModalTitle">新增族譜人物</h3>
+        <div class="flex items-center gap-2">
+          <span class="text-base p-1 bg-indigo-500/20 text-indigo-300 rounded-lg">👤</span>
+          <h3 class="text-sm font-black text-white" id="personModalTitle">新增族譜人物</h3>
+        </div>
         <button type="button" onclick="closePersonModal()" class="text-slate-400 hover:text-white text-sm">✕</button>
       </div>
 
       <form id="personForm" onsubmit="handleSavePerson(event)" class="p-5 space-y-3.5 text-xs">
         <input type="hidden" id="editPersonId" value="">
 
-        <div>
-          <label class="block font-bold text-slate-300 mb-1">人物姓名 <span class="text-rose-400">*</span></label>
-          <input type="text" id="inputName" required placeholder="例如：柳金福、蕭吳美玉" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-indigo-500">
-        </div>
-
+        <!-- 姓名分欄輸入：姓、名 -->
         <div class="grid grid-cols-2 gap-3">
           <div>
-            <label class="block font-bold text-slate-300 mb-1">輩份階層 (由上到下) <span class="text-rose-400">*</span></label>
-            <select id="inputLevel" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-indigo-500">
-              <option value="1">第 1 代（曾祖/長輩層）</option>
-              <option value="2">第 2 代（祖輩層）</option>
-              <option value="3">第 3 代（父輩層）</option>
-              <option value="4" selected>第 4 代（子輩/現任持有者）</option>
-              <option value="0">第 0 代（開基祖先層）</option>
+            <label class="block font-bold text-slate-300 mb-1">姓 (Surname) <span class="text-rose-400">*</span></label>
+            <input type="text" id="inputSurname" required placeholder="例如：林、柳、蕭" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-white font-bold focus:outline-none focus:border-indigo-500">
+          </div>
+          <div>
+            <label class="block font-bold text-slate-300 mb-1">名 (Given Name) <span class="text-rose-400">*</span></label>
+            <input type="text" id="inputGivenName" required placeholder="例如：清全、進財、金福" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-white font-bold focus:outline-none focus:border-indigo-500">
+          </div>
+        </div>
+
+        <!-- 身分證字號 -->
+        <div>
+          <label class="block font-bold text-slate-300 mb-1">身分證字號 (如果有，無則留空)</label>
+          <input type="text" id="inputIdCode" placeholder="例如：A129*6、Y120*4 (留空則不顯示)" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-white font-mono focus:outline-none focus:border-indigo-500">
+        </div>
+
+        <!-- 門牌與樓層 -->
+        <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 space-y-2">
+          <div class="flex items-center justify-between">
+            <label class="font-bold text-sky-400">房屋門牌與樓層</label>
+            <span class="text-[10px] text-slate-400">若多個門牌請分行輸入</span>
+          </div>
+          <div class="grid grid-cols-3 gap-2">
+            <div class="col-span-2">
+              <input type="text" id="inputDoorNumber" placeholder="門牌例如：2弄10號、明德路225號" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-white focus:outline-none focus:border-indigo-500">
+            </div>
+            <div>
+              <select id="inputFloorSelect" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2 py-1.5 text-white focus:outline-none focus:border-indigo-500">
+                <option value="1樓">1樓</option>
+                <option value="2樓">2樓</option>
+                <option value="3樓">3樓</option>
+                <option value="4樓">4樓</option>
+                <option value="其他">其他樓層</option>
+                <option value="無" selected>無特定樓層</option>
+              </select>
+            </div>
+          </div>
+          <div>
+            <textarea id="inputDoorsList" rows="2" placeholder="全部持有門牌（可多行輸入，若有多於一個將全部完整顯示）：
+例如：
+2弄10號 1樓
+明德路225號 4樓" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-white leading-relaxed focus:outline-none focus:border-indigo-500"></textarea>
+          </div>
+        </div>
+
+        <!-- 輩份世代 (一層一層) -->
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-bold text-slate-300 mb-1">輩份世代 (由上到下排階層) <span class="text-rose-400">*</span></label>
+            <select id="inputLevel" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-indigo-500 font-medium">
+              <option value="1">第 1 代（父母／曾祖長輩層）</option>
+              <option value="2" selected>第 2 代（子女／祖輩層）</option>
+              <option value="3">第 3 代（孫輩／父輩層）</option>
+              <option value="4">第 4 代（曾孫／現任地主層）</option>
+              <option value="0">第 0 代（更高長輩層）</option>
             </select>
           </div>
           <div>
-            <label class="block font-bold text-slate-300 mb-1">性別/稱謂</label>
+            <label class="block font-bold text-slate-300 mb-1">性別／稱謂</label>
             <select id="inputGender" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-indigo-500">
               <option value="male">男性 (父/子/兄/弟)</option>
               <option value="female">女性 (母/女/妻/姊/妹)</option>
-              <option value="other">未知/長輩</option>
+              <option value="other">其他/未明</option>
             </select>
           </div>
         </div>
 
-        <div>
-          <label class="block font-bold text-slate-300 mb-1">身分證字號 (如果有)</label>
-          <input type="text" id="inputIdCode" placeholder="例如：A123*****4 (留空則不顯示)" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-white font-mono focus:outline-none focus:border-indigo-500">
+        <!-- 快速關聯：父親/母親是誰？ (建立由上到下親屬線) -->
+        <div id="quickParentSection" class="bg-slate-950 p-2.5 rounded-xl border border-slate-800 space-y-1.5">
+          <label class="block font-bold text-slate-400">父親／母親是誰？ (自動建立垂直代際關係)</label>
+          <select id="inputParentSelect" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-white focus:outline-none focus:border-indigo-500">
+            <option value="">-- 無 (或手動於建立關係中指定) --</option>
+          </select>
         </div>
 
+        <!-- 背景與備註 -->
         <div>
-          <label class="block font-bold text-slate-300 mb-1">持有房屋門牌號 (若多個請以逗號或換行分開)</label>
-          <textarea id="inputDoors" rows="2" placeholder="例如：
-明德路215巷2弄12號 1樓
-明德路225號 4樓" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-indigo-500 leading-relaxed"></textarea>
-          <p class="text-[10px] text-slate-400 mt-0.5">系統將在姓名與身分證下方，依序完整呈現所有門牌。</p>
+          <label class="block font-bold text-slate-300 mb-1">背景情資與傳聞備註 (選填)</label>
+          <textarea id="inputNotes" rows="2" placeholder="例如：某某之妻，配偶為蕭氏長輩，婚姻傳聞等..." class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-slate-300 focus:outline-none focus:border-indigo-500"></textarea>
         </div>
 
-        <div>
-          <label class="block font-bold text-slate-300 mb-1">身分背景與傳聞備註</label>
-          <textarea id="inputNotes" rows="2" placeholder="例如：柳清之妻，相傳有三次婚姻..." class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-slate-300 focus:outline-none focus:border-indigo-500"></textarea>
-        </div>
-
-        <div class="pt-2 flex items-center justify-end gap-2 border-t border-slate-800">
+        <div class="pt-3 flex items-center justify-end gap-2 border-t border-slate-800">
           <button type="button" onclick="closePersonModal()" class="px-4 py-2 rounded-xl text-slate-400 hover:text-white font-bold transition">取消</button>
           <button type="submit" class="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-black shadow-md transition">儲存人物</button>
         </div>
@@ -278,8 +324,8 @@
         <div>
           <label class="block font-bold text-slate-300 mb-1">親屬/婚姻關係類型</label>
           <select id="relType" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-indigo-500">
-            <option value="parent_child">父子 / 母子（由上至下代際連線）</option>
-            <option value="spouse_current">夫妻（同輩現任配偶，實線雙向）</option>
+            <option value="parent_child">父子 / 母子（由上至下垂直連線）</option>
+            <option value="spouse_current">夫妻（同輩現任配偶，實線水平）</option>
             <option value="spouse_ex">前夫 / 前妻（再婚或傳聞，虛線標記）</option>
             <option value="siblings">兄弟姊妹（同輩手足連線）</option>
           </select>
@@ -294,7 +340,7 @@
 
         <div>
           <label class="block font-bold text-slate-300 mb-1">連線標籤 / 補充說明 (選填)</label>
-          <input type="text" id="relLabel" placeholder="例如：長子、再婚前夫？" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-indigo-500">
+          <input type="text" id="relLabel" placeholder="例如：父子、夫妻、長子、再婚前夫？" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-indigo-500">
         </div>
 
         <div class="pt-2 flex items-center justify-end gap-2 border-t border-slate-800">
@@ -306,158 +352,14 @@
   </div>
 
   <script>
-    // 預設資料：僅保留柳家與蕭吳美玉核心起點，砍掉所有多餘蜘蛛網
-        // 預設資料：包含柳氏家族核心與林氏家族四代親族
-    const INITIAL_GENEALOGY_DATA = {
-      persons: [
-        // === 柳氏家族 ===
-        {
-          id: 'p_liu_qing',
-          name: '柳清',
-          clan: '柳',
-          level: 1, // 第1代：長輩層
-          gender: 'male',
-          idCode: '',
-          doors: [],
-          notes: '柳家老長輩，配偶蕭吳美玉，育有柳金福等人。'
-        },
-        {
-          id: 'p_xiao_wu_meiyu',
-          name: '蕭吳美玉',
-          clan: '蕭',
-          level: 1, // 第1代：長輩層
-          gender: 'female',
-          idCode: '',
-          doors: [],
-          notes: '冠雙姓（蕭、吳）。相傳歷經多次婚姻，牽動蕭氏祖業與柳家房產之傳承關鍵樞紐。'
-        },
-        {
-          id: 'p_liu_jinfu',
-          name: '柳金福',
-          clan: '柳',
-          level: 2, // 第2代：晚輩層
-          gender: 'male',
-          idCode: '',
-          doors: ['明德路215巷2弄12號 1樓'],
-          notes: '父柳清、母蕭吳美玉。為2弄12號1樓所有權人。'
-        },
-
-        // === 林氏家族 (10號棟核心四代脈絡) ===
-        {
-          id: 'p_lin_qingquan',
-          name: '林清全',
-          clan: '林',
-          level: 1, // 第1代：曾祖長輩層
-          gender: 'male',
-          idCode: '',
-          doors: [],
-          notes: '林氏家族長輩，配偶林圳吉，育有林進財、林春雄等。'
-        },
-        {
-          id: 'p_lin_zhenji',
-          name: '林圳吉',
-          clan: '林',
-          level: 1, // 第1代：曾祖長輩層
-          gender: 'female',
-          idCode: '',
-          doors: [],
-          notes: '林清全之妻，育有林進財、林春雄。'
-        },
-        {
-          id: 'p_lin_jincai',
-          name: '林進財',
-          clan: '林',
-          level: 2, // 第2代：祖輩
-          gender: 'male',
-          idCode: '',
-          doors: [],
-          notes: '父林清全、母林圳吉，育有子林俊賢，孫為林韋安。'
-        },
-        {
-          id: 'p_lin_chunxiong',
-          name: '林春雄',
-          clan: '林',
-          level: 2, // 第2代：祖輩
-          gender: 'male',
-          idCode: '',
-          doors: [],
-          notes: '父林清全、母林圳吉，配偶林蕭清惠，育有林奇民（吉奇）、林佩怡。'
-        },
-        {
-          id: 'p_lin_xiao_qinghui',
-          name: '林蕭清惠',
-          clan: '蕭',
-          level: 2, // 第2代：配偶
-          gender: 'female',
-          idCode: '',
-          doors: [],
-          notes: '林春雄之妻，本姓蕭（冠夫姓林）。再次印證蕭氏家族在本地段之深厚聯姻脈絡！'
-        },
-        {
-          id: 'p_lin_junxian',
-          name: '林俊賢',
-          clan: '林',
-          level: 3, // 第3代：父輩
-          gender: 'male',
-          idCode: '',
-          doors: [],
-          notes: '父林進財，育有子林韋安。'
-        },
-        {
-          id: 'p_lin_qimin',
-          name: '林奇民 (吉奇)',
-          clan: '林',
-          level: 3, // 第3代：父輩
-          gender: 'male',
-          idCode: 'Y120*4',
-          doors: ['明德路215巷2弄10號 2樓'],
-          notes: '父林春雄、母林蕭清惠，原名林奇民，後改名為吉奇。現為10號2樓所有權人。'
-        },
-        {
-          id: 'p_lin_peiyi',
-          name: '林佩怡',
-          clan: '林',
-          level: 3, // 第3代：父輩
-          gender: 'female',
-          idCode: '',
-          doors: [],
-          notes: '父林春雄、母林蕭清惠。'
-        },
-        {
-          id: 'p_lin_weian',
-          name: '林韋安',
-          clan: '林',
-          level: 4, // 第4代：子輩 (現任持有者)
-          gender: 'male',
-          idCode: 'A129*6',
-          doors: ['明德路215巷2弄10號 1樓'],
-          notes: '父林俊賢，祖父林進財，曾祖父林清全。現為10號1樓所有權人。'
-        }
-      ],
-      relations: [
-        // 柳家關係
-        { id: 'r_liu_1', from: 'p_liu_qing', to: 'p_xiao_wu_meiyu', type: 'spouse_current', label: '夫妻' },
-        { id: 'r_liu_2', from: 'p_liu_qing', to: 'p_liu_jinfu', type: 'parent_child', label: '父子' },
-        { id: 'r_liu_3', from: 'p_xiao_wu_meiyu', to: 'p_liu_jinfu', type: 'parent_child', label: '母子' },
-
-        // 林家關係 (四代脈絡)
-        { id: 'r_lin_1', from: 'p_lin_qingquan', to: 'p_lin_zhenji', type: 'spouse_current', label: '夫妻' },
-        { id: 'r_lin_2', from: 'p_lin_qingquan', to: 'p_lin_jincai', type: 'parent_child', label: '父子' },
-        { id: 'r_lin_3', from: 'p_lin_zhenji', to: 'p_lin_jincai', type: 'parent_child', label: '母子' },
-        { id: 'r_lin_4', from: 'p_lin_qingquan', to: 'p_lin_chunxiong', type: 'parent_child', label: '父子' },
-        { id: 'r_lin_5', from: 'p_lin_zhenji', to: 'p_lin_chunxiong', type: 'parent_child', label: '母子' },
-        { id: 'r_lin_6', from: 'p_lin_jincai', to: 'p_lin_chunxiong', type: 'siblings', label: '兄弟' },
-        { id: 'r_lin_7', from: 'p_lin_chunxiong', to: 'p_lin_xiao_qinghui', type: 'spouse_current', label: '夫妻' },
-        { id: 'r_lin_8', from: 'p_lin_jincai', to: 'p_lin_junxian', type: 'parent_child', label: '父子' },
-        { id: 'r_lin_9', from: 'p_lin_chunxiong', to: 'p_lin_qimin', type: 'parent_child', label: '父子' },
-        { id: 'r_lin_10', from: 'p_lin_xiao_qinghui', to: 'p_lin_qimin', type: 'parent_child', label: '母子' },
-        { id: 'r_lin_11', from: 'p_lin_chunxiong', to: 'p_lin_peiyi', type: 'parent_child', label: '父女' },
-        { id: 'r_lin_12', from: 'p_lin_xiao_qinghui', to: 'p_lin_peiyi', type: 'parent_child', label: '母女' },
-        { id: 'r_lin_13', from: 'p_lin_junxian', to: 'p_lin_weian', type: 'parent_child', label: '父子' }
-      ]
+    // 依使用者指示：初始為完全空白，所有人物與關係全部刪除！
+    const BLANK_INITIAL_DATA = {
+      persons: [],
+      relations: []
     };
 
-    const STORAGE_KEY = 'mingde_hierarchical_genealogy_v3';
+    // 使用全新的 STORAGE_KEY 確保徹底清除舊的預載資料
+    const STORAGE_KEY = 'mingde_genealogy_clean_v4';
     let appData = loadAppData();
     let network = null;
     let selectedPersonId = null;
@@ -471,17 +373,30 @@
           console.warn('載入族譜儲存失敗：', e);
         }
       }
-      return JSON.parse(JSON.stringify(INITIAL_GENEALOGY_DATA));
+      return JSON.parse(JSON.stringify(BLANK_INITIAL_DATA));
     }
 
     function saveAppData() {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(appData));
+      updateEmptyStateVisibility();
     }
 
-    // 將人物物件格式化為 Vis.js 階層節點
-    // 依使用者指示：先顯示名字，下方顯示身分證字號（如果有），之後顯示門牌號（若有多於一個也都顯示）
+    function updateEmptyStateVisibility() {
+      const box = document.getElementById('emptyStateBox');
+      if (box) {
+        if (!appData.persons || appData.persons.length === 0) {
+          box.classList.remove('hidden');
+        } else {
+          box.classList.add('hidden');
+        }
+      }
+    }
+
+    // 將人物格式化為 Vis.js 階層卡片：
+    // 依使用者指示：先顯示名字(姓+名)，下方顯示身分證字號(如果有)，之後顯示門牌號與樓層(若多個全顯示)
     function formatPersonToVisNode(person) {
-      let labelText = `<b>${person.name}</b>`;
+      const fullName = (person.surname || '') + (person.givenName || person.name || '');
+      let labelText = `<b>${fullName}</b>`;
 
       if (person.idCode && person.idCode.trim()) {
         labelText += `\n<font size="2" color="#94a3b8">${person.idCode.trim()}</font>`;
@@ -495,7 +410,7 @@
         });
       }
 
-      // 依輩份階層上色
+      // 依階層層級上色
       let bgColor = '#1e293b';
       let borderColor = '#64748b';
       let borderWidth = 2;
@@ -503,14 +418,14 @@
       if (person.level === 0) {
         borderColor = '#a855f7'; // 紫色 祖輩
       } else if (person.level === 1) {
-        borderColor = '#f59e0b'; // 金黃 曾祖長輩
+        borderColor = '#f59e0b'; // 金黃 曾祖/父母長輩
         borderWidth = 3;
       } else if (person.level === 2) {
-        borderColor = '#3b82f6'; // 藍色 祖輩
+        borderColor = '#3b82f6'; // 藍色 祖輩/子女
       } else if (person.level === 3) {
-        borderColor = '#10b981'; // 綠色 父輩
+        borderColor = '#10b981'; // 綠色 父輩/孫輩
       } else if (person.level === 4) {
-        borderColor = '#06b6d4'; // 青藍 現任持有者
+        borderColor = '#06b6d4'; // 青藍 曾孫/現任持有地主
         borderWidth = 3;
       }
 
@@ -536,19 +451,19 @@
       };
     }
 
-    // 將親屬關係轉換為 Vis.js 連線
+    // 格式化連線關係
     function formatRelationToVisEdge(rel) {
       let isDashed = false;
       let color = '#64748b';
       let arrows = { to: { enabled: true, scaleFactor: 0.8 } };
 
       if (rel.type === 'parent_child') {
-        color = '#38bdf8'; // 天藍色 父子/母子直系
+        color = '#38bdf8'; // 天藍色 直系父母子女
       } else if (rel.type === 'spouse_current') {
         color = '#f59e0b'; // 金黃色 夫妻
-        arrows = { to: { enabled: false } }; // 夫妻不設方向箭頭
+        arrows = { to: { enabled: false } };
       } else if (rel.type === 'spouse_ex') {
-        color = '#fb7185'; // 玫瑰紅 虛線代表前夫/傳聞
+        color = '#fb7185'; // 玫瑰紅 虛線代表前夫/再婚
         isDashed = true;
         arrows = { to: { enabled: false } };
       } else if (rel.type === 'siblings') {
@@ -574,34 +489,18 @@
     }
 
     // 初始化階層族譜圖
-    
-    let activeFilterClan = 'ALL';
-
-    function filterClan(clan) {
-      activeFilterClan = clan;
-      const btnAll = document.getElementById('btnClanAll');
-      const btnLin = document.getElementById('btnClanLin');
-      const btnLiu = document.getElementById('btnClanLiu');
-
-      if (btnAll) btnAll.className = clan === 'ALL' ? 'px-2.5 py-1.5 rounded-lg bg-indigo-600 text-white shadow-xs transition' : 'px-2.5 py-1.5 rounded-lg text-slate-400 hover:text-white transition';
-      if (btnLin) btnLin.className = clan === '林' ? 'px-2.5 py-1.5 rounded-lg bg-indigo-600 text-white shadow-xs transition' : 'px-2.5 py-1.5 rounded-lg text-slate-400 hover:text-white transition';
-      if (btnLiu) btnLiu.className = clan === '柳' ? 'px-2.5 py-1.5 rounded-lg bg-indigo-600 text-white shadow-xs transition' : 'px-2.5 py-1.5 rounded-lg text-slate-400 hover:text-white transition';
-
-      renderVisNetwork();
-      renderGenerationalListView();
-    }
-
     function renderVisNetwork() {
       const container = document.getElementById('networkContainer');
-      let filteredPersons = appData.persons;
-      if (activeFilterClan && activeFilterClan !== 'ALL') {
-        filteredPersons = appData.persons.filter(p => p.clan === activeFilterClan || (activeFilterClan === '林' && p.clan === '蕭') || (activeFilterClan === '柳' && p.clan === '蕭'));
-      }
-      const personIds = new Set(filteredPersons.map(p => p.id));
-      const filteredRelations = appData.relations.filter(r => personIds.has(r.from) && personIds.has(r.to));
+      updateEmptyStateVisibility();
 
-      const visNodes = new vis.DataSet(filteredPersons.map(p => formatPersonToVisNode(p)));
-      const visEdges = new vis.DataSet(filteredRelations.map(r => formatRelationToVisEdge(r)));
+      if (!appData.persons || appData.persons.length === 0) {
+        if (network) network.destroy();
+        network = null;
+        return;
+      }
+
+      const visNodes = new vis.DataSet(appData.persons.map(p => formatPersonToVisNode(p)));
+      const visEdges = new vis.DataSet(appData.relations.map(r => formatRelationToVisEdge(r)));
 
       const options = {
         layout: {
@@ -685,6 +584,19 @@
       const wrapper = document.getElementById('generationalCardsWrapper');
       wrapper.innerHTML = '';
 
+      if (!appData.persons || appData.persons.length === 0) {
+        wrapper.innerHTML = `
+          <div class="p-8 text-center bg-slate-900 rounded-2xl border border-slate-800 space-y-3">
+            <div class="text-3xl">📇</div>
+            <div class="text-slate-400 font-bold">目前無任何人物資料</div>
+            <button type="button" onclick="openAddPersonModal()" class="px-4 py-2 rounded-xl bg-indigo-600 text-white text-xs font-bold hover:bg-indigo-500 transition">
+              ➕ 立即新增人物
+            </button>
+          </div>
+        `;
+        return;
+      }
+
       const levels = [
         { level: 0, title: '【 第 0 代 • 祖先長輩層 】', color: 'border-purple-600 text-purple-300' },
         { level: 1, title: '【 第 1 代 • 曾祖／高祖長輩層 】', color: 'border-amber-500 text-amber-300' },
@@ -707,10 +619,12 @@
             </h2>
           </div>
           <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
-            ${persons.map(p => `
+            ${persons.map(p => {
+              const fullName = (p.surname || '') + (p.givenName || p.name || '');
+              return `
               <div onclick="openPersonDrawer('${p.id}')" class="p-4 rounded-xl bg-slate-950 border border-slate-800 hover:border-slate-600 cursor-pointer transition shadow-sm space-y-2">
                 <div class="flex items-center justify-between">
-                  <div class="text-base font-black text-white">${p.name}</div>
+                  <div class="text-base font-black text-white">${fullName}</div>
                   <span class="text-[10px] px-2 py-0.5 rounded font-bold bg-slate-800 text-slate-300">
                     ${p.gender === 'male' ? '♂ 男性' : p.gender === 'female' ? '♀ 女性' : '長輩'}
                   </span>
@@ -727,7 +641,7 @@
                 ` : `<div class="text-[11px] text-slate-600">（無登記獨立建物門牌）</div>`}
                 ${p.notes ? `<div class="text-[11px] text-slate-400 pt-1 line-clamp-2">${p.notes}</div>` : ''}
               </div>
-            `).join('')}
+            `;}).join('')}
           </div>
         `;
         wrapper.appendChild(sec);
@@ -740,16 +654,19 @@
       const p = appData.persons.find(x => x.id === personId);
       if (!p) return;
 
-      document.getElementById('drawerPersonName').textContent = p.name;
-      document.getElementById('drawerName').textContent = p.name;
+      const fullName = (p.surname || '') + (p.givenName || p.name || '');
+      document.getElementById('drawerPersonName').textContent = fullName;
+      document.getElementById('drawerName').textContent = fullName;
+      document.getElementById('drawerSurname').textContent = p.surname || '未填';
+      document.getElementById('drawerGivenName').textContent = p.givenName || p.name || '未填';
       document.getElementById('drawerGeneration').textContent = 
-        p.level === 0 ? '第 0 代（祖父長輩）' :
+        p.level === 0 ? '第 0 代（祖先長輩）' :
         p.level === 1 ? '第 1 代（父母長輩）' :
-        p.level === 2 ? '第 2 代（子女晚輩）' : '第 3 代（孫輩後代）';
-      document.getElementById('drawerIdCode').textContent = p.idCode || '（未登記身分證）';
-      document.getElementById('drawerRole').textContent = p.gender === 'male' ? '男性 (父/子/兄/弟)' : p.gender === 'female' ? '女性 (母/女/妻/姊/妹)' : '長輩';
+        p.level === 2 ? '第 2 代（子女晚輩）' :
+        p.level === 3 ? '第 3 代（孫輩）' : '第 4 代（曾孫現任）';
+      document.getElementById('drawerIdCode').textContent = p.idCode || '（未填寫）';
 
-      // 門牌
+      // 門牌與樓層
       const doorsContainer = document.getElementById('drawerDoorsList');
       if (p.doors && p.doors.length > 0) {
         doorsContainer.innerHTML = p.doors.map(d => `
@@ -759,7 +676,7 @@
           </div>
         `).join('');
       } else {
-        doorsContainer.innerHTML = '<span class="text-slate-500">（無獨立持有門牌）</span>';
+        doorsContainer.innerHTML = '<span class="text-slate-500">（無登記門牌樓層）</span>';
       }
 
       // 關聯清單
@@ -769,7 +686,7 @@
         relContainer.innerHTML = rels.map(r => {
           const otherId = r.from === personId ? r.to : r.from;
           const otherPerson = appData.persons.find(x => x.id === otherId);
-          const otherName = otherPerson ? otherPerson.name : otherId;
+          const otherName = otherPerson ? ((otherPerson.surname || '') + (otherPerson.givenName || otherPerson.name || '')) : otherId;
           const label = r.label || (r.type === 'parent_child' ? (r.from === personId ? '子女' : '父母') : '配偶/親屬');
           return `
             <div class="flex items-center justify-between p-1.5 rounded bg-slate-900 border border-slate-800">
@@ -791,24 +708,42 @@
       selectedPersonId = null;
     }
 
+    // 重新填充父/母下拉選單
+    function populateParentSelect() {
+      const sel = document.getElementById('inputParentSelect');
+      sel.innerHTML = '<option value="">-- 無 (或手動於建立關係中指定) --</option>';
+      appData.persons.forEach(p => {
+        const opt = document.createElement('option');
+        opt.value = p.id;
+        const fn = (p.surname || '') + (p.givenName || p.name || '');
+        opt.textContent = `${fn} (第${p.level}代)`;
+        sel.appendChild(opt);
+      });
+    }
+
     // 新增/編輯人物 Modal
     function openAddPersonModal(editId = null) {
       document.getElementById('personForm').reset();
       document.getElementById('editPersonId').value = editId || '';
+      populateParentSelect();
 
       if (editId) {
         const p = appData.persons.find(x => x.id === editId);
         if (p) {
-          document.getElementById('personModalTitle').textContent = `編輯人物：${p.name}`;
-          document.getElementById('inputName').value = p.name;
+          const fn = (p.surname || '') + (p.givenName || p.name || '');
+          document.getElementById('personModalTitle').textContent = `編輯人物：${fn}`;
+          document.getElementById('inputSurname').value = p.surname || '';
+          document.getElementById('inputGivenName').value = p.givenName || p.name || '';
           document.getElementById('inputLevel').value = p.level !== undefined ? p.level : 2;
           document.getElementById('inputGender').value = p.gender || 'male';
           document.getElementById('inputIdCode').value = p.idCode || '';
-          document.getElementById('inputDoors').value = (p.doors || []).join('\n');
+          document.getElementById('inputDoorsList').value = (p.doors || []).join('\n');
           document.getElementById('inputNotes').value = p.notes || '';
+          document.getElementById('quickParentSection').classList.add('hidden');
         }
       } else {
         document.getElementById('personModalTitle').textContent = '新增族譜人物';
+        document.getElementById('quickParentSection').classList.remove('hidden');
       }
 
       document.getElementById('personModal').classList.remove('hidden');
@@ -818,25 +753,46 @@
       document.getElementById('personModal').classList.add('hidden');
     }
 
+    // 儲存人物（處理 姓、名、身分證字號、樓層門牌）
     function handleSavePerson(e) {
       e.preventDefault();
       const editId = document.getElementById('editPersonId').value;
-      const name = document.getElementById('inputName').value.trim();
+      const surname = document.getElementById('inputSurname').value.trim();
+      const givenName = document.getElementById('inputGivenName').value.trim();
       const level = Number(document.getElementById('inputLevel').value);
       const gender = document.getElementById('inputGender').value;
       const idCode = document.getElementById('inputIdCode').value.trim();
-      const rawDoors = document.getElementById('inputDoors').value;
       const notes = document.getElementById('inputNotes').value.trim();
 
-      const doors = rawDoors
+      // 樓層與門牌解析
+      const doorInput = document.getElementById('inputDoorNumber').value.trim();
+      const floorSelect = document.getElementById('inputFloorSelect').value;
+      const rawDoorsList = document.getElementById('inputDoorsList').value;
+
+      let doors = rawDoorsList
         .split(/[\n,，]+/)
         .map(d => d.trim())
         .filter(d => d.length > 0);
 
+      // 若快捷輸入框有填寫，合併進門牌清單
+      if (doorInput) {
+        let combinedDoor = doorInput;
+        if (floorSelect && floorSelect !== '無' && !doorInput.includes(floorSelect)) {
+          combinedDoor += ' ' + floorSelect;
+        }
+        if (!doors.includes(combinedDoor)) {
+          doors.unshift(combinedDoor);
+        }
+      }
+
+      let savedPersonId = editId;
+
       if (editId) {
         const p = appData.persons.find(x => x.id === editId);
         if (p) {
-          p.name = name;
+          p.surname = surname;
+          p.givenName = givenName;
+          p.name = surname + givenName;
           p.level = level;
           p.gender = gender;
           p.idCode = idCode;
@@ -844,23 +800,38 @@
           p.notes = notes;
         }
       } else {
-        const newId = 'p_' + Date.now();
-        appData.persons.push({
-          id: newId,
-          name,
+        savedPersonId = 'p_' + Date.now();
+        const newPerson = {
+          id: savedPersonId,
+          surname,
+          givenName,
+          name: surname + givenName,
           level,
           gender,
           idCode,
           doors,
           notes
-        });
+        };
+        appData.persons.push(newPerson);
+
+        // 如果選擇了父親/母親，自動建立連線
+        const parentId = document.getElementById('inputParentSelect').value;
+        if (parentId) {
+          appData.relations.push({
+            id: 'r_' + Date.now(),
+            from: parentId,
+            to: savedPersonId,
+            type: 'parent_child',
+            label: '父子/母子'
+          });
+        }
       }
 
       saveAppData();
       closePersonModal();
       renderVisNetwork();
       renderGenerationalListView();
-      if (editId) openPersonDrawer(editId);
+      if (savedPersonId) openPersonDrawer(savedPersonId);
     }
 
     function editCurrentSelectedPerson() {
@@ -870,7 +841,8 @@
     function deleteCurrentSelectedPerson() {
       if (!selectedPersonId) return;
       const p = appData.persons.find(x => x.id === selectedPersonId);
-      if (!confirm(`確定要從族譜中刪除【${p ? p.name : '此人'}】嗎？\n相關連線也會一併移除。`)) return;
+      const fn = p ? ((p.surname || '') + (p.givenName || p.name || '')) : '此人';
+      if (!confirm(`確定要從族譜中刪除【${fn}】嗎？\n相關親屬連線也會一併移除。`)) return;
 
       appData.persons = appData.persons.filter(x => x.id !== selectedPersonId);
       appData.relations = appData.relations.filter(r => r.from !== selectedPersonId && r.to !== selectedPersonId);
@@ -888,15 +860,22 @@
       fromSel.innerHTML = '';
       toSel.innerHTML = '';
 
+      if (appData.persons.length < 2) {
+        alert('請先至少新增兩位人物，才能建立親屬或婚姻關係！');
+        openAddPersonModal();
+        return;
+      }
+
       appData.persons.forEach(p => {
+        const fn = (p.surname || '') + (p.givenName || p.name || '');
         const opt1 = document.createElement('option');
         opt1.value = p.id;
-        opt1.textContent = `${p.name} (第${p.level}代)`;
+        opt1.textContent = `${fn} (第${p.level}代)`;
         fromSel.appendChild(opt1);
 
         const opt2 = document.createElement('option');
         opt2.value = p.id;
-        opt2.textContent = `${p.name} (第${p.level}代)`;
+        opt2.textContent = `${fn} (第${p.level}代)`;
         toSel.appendChild(opt2);
       });
 
@@ -951,16 +930,6 @@
       renderVisNetwork();
       renderGenerationalListView();
       if (selectedPersonId) openPersonDrawer(selectedPersonId);
-    }
-
-    // 重設為柳家起點
-    function resetToInitialLiuClan() {
-      if (!confirm('確定要重置為柳家核心起點（柳清、蕭吳美玉、柳金福）嗎？')) return;
-      appData = JSON.parse(JSON.stringify(INITIAL_GENEALOGY_DATA));
-      saveAppData();
-      closePersonDrawer();
-      renderVisNetwork();
-      renderGenerationalListView();
     }
 
     // 完全清空畫布
